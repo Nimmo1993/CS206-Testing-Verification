@@ -25,15 +25,17 @@ class Benchmark(object):
     test_cases: file which contains test cases for us
     mutations: list of mutations to test against, a list of paths which contain
         all available mutations for the benchmark
-    baseline: what the coverages look like from a no input test
-
+    results: where to store the coverage results
     """
 
     """
     This will give us the branch and statement coverage of runs
     we will need to formulate our run as follows:
         gcc -fprofile-arcs -ftest-coverage -fPIC input.c -o out
-        we then run the program with test data.  This creates 2 files: [exec].gcda and [exec].gcno
+        This creates 2 files: [exec].gcda and [exec].gcno
+        we then execute: ./out [args]
+        then run: gcov -abci input.c
+        and repeat
         from there we can run gcov and see exactly what happens
         gcov -a -b -c -o gcov_out --object-file executable './executable arg1 arg2 argN'"
     """
@@ -41,7 +43,8 @@ class Benchmark(object):
     __gcov_out = "gcov_out"
     __gcc = "gcc -fprofile-arcs -ftest-coverage -fPIC -o {0}".format(__gcc_out)
     __gcov_obj_file = "--object-file executable"
-    __gcov = "gcov -a -b -c -o {0} {1}".format(__gcov_out, __gcov_obj_file)
+    __gcov = "gcov -abc"
+    __universe = "universe.txt"
 
     def __init__(self, path, line):
         b = line.split('~')
@@ -52,23 +55,27 @@ class Benchmark(object):
         self.test_cases = b[4]
         self.path = path + self.name + "/"
         self.mutations = []
+        # Compile the file first
+        Benchmark.run_command("{0} {1}.c".format(Benchmark.__gcc, self.name))
+        # get all the mutations present in the directory
         for subdirs, dirs, files in os.walk(self.path):
             to_check = subdirs.split('/')[-1]
             if len(to_check) > 0:
                 if to_check[0] == 'v':
                     self.mutations.append(subdirs)
-        self.baseline = self.build_base_line()
+        # this is where we will store the results for our tests
+        self.results = []
+        # run the tests on our non-mutated program
+        self.run_tests()
 
-    def build_base_line(self):
-        command = "{0} {1}.c".format(Benchmark.__gcc, self.name)
-        print command
-        comman = "this part isn't working yet..."
-        #command = "{0} ./{1}".format(Benchmark.__gcov, Benchmark.__gcc_out)
-        print command
-        return None
-
-    def run_gcov(self):
-        pass
+    def run_tests(self):
+        with open(self.path + Benchmark.__universe) as f:
+            for line in f:
+                command = "{0}./{1} {2}".format(self.path, Benchmark.__gcc_out, line)
+                Benchmark.run_command(command)
+                command = "{0} {1}{2}.c".format(Benchmark.__gcov, self.path, self.name)
+                Benchmark.run_command(command)
+                pass
 
     def get_mutations_as_string(self):
         string = ""
@@ -78,6 +85,7 @@ class Benchmark(object):
 
     @staticmethod
     def run_command(command):
+        print command
         p = subprocess.Popen(command.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = p.communicate()
         print out
