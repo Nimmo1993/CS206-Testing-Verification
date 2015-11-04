@@ -32,12 +32,14 @@ class Benchmark(object):
     """
     This will give us the branch and statement coverage of runs
     we will need to formulate our run as follows:
-        gcc -fprofile-arcs -ftest-coverage -lgcov input.c -o out
+        gcc -fprofile-arcs -ftest-coverage -fPIC input.c -o out
+        we then run the program with test data.  This creates 2 files: [exec].gcda and [exec].gcno
+        from there we can run gcov and see exactly what happens
         gcov -a -b -c -o gcov_out --object-file executable './executable arg1 arg2 argN'"
     """
     __gcc_out = "out"
     __gcov_out = "gcov_out"
-    __gcc = "gcc -fprofile-arcs -ftest-coverage -o {0}".format(__gcc_out)
+    __gcc = "gcc -fprofile-arcs -ftest-coverage -fPIC -o {0}".format(__gcc_out)
     __gcov_obj_file = "--object-file executable"
     __gcov = "gcov -a -b -c -o {0} {1}".format(__gcov_out, __gcov_obj_file)
 
