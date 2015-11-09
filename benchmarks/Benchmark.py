@@ -1,6 +1,4 @@
-from testcases.Random import Random
-from testcases.Branch import Branch
-from testcases.Additional import Additional
+from structures.GcovResults import GcovResults
 import os
 import subprocess
 
@@ -55,41 +53,67 @@ class Benchmark(object):
         self.test_cases = b[4]
         self.path = path + self.name + "/"
         self.mutations = []
-        # Compile the file first
+
+        # Compile the file with the necessary gcov flags
         Benchmark.run_command("{0} {1}.c".format(Benchmark.__gcc, self.name))
+
         # get all the mutations present in the directory
         for subdirs, dirs, files in os.walk(self.path):
             to_check = subdirs.split('/')[-1]
             if len(to_check) > 0:
                 if to_check[0] == 'v':
                     self.mutations.append(subdirs)
+
         # this is where we will store the results for our tests
         self.results = []
         # run the tests on our non-mutated program
         self.run_tests()
 
+    """
+    Run the tests available to the program
+    """
     def run_tests(self):
         with open(self.path + Benchmark.__universe) as f:
             for line in f:
+                # run the test set given our newly compiled file
                 command = "{0}./{1} {2}".format(self.path, Benchmark.__gcc_out, line)
                 Benchmark.run_command(command)
+
+                # Create the .gcov file from the gcno and gcda data
                 command = "{0} {1}{2}.c".format(Benchmark.__gcov, self.path, self.name)
                 Benchmark.run_command(command)
-                pass
 
+                # Pass the path to the newly created gcov file in order to parse what we need
+                statements = GcovResults.parse_statements("{0}{1}.c.gcov".format(self.path, self.name))
+                branches = GcovResults.parse_branches("{0}{1}.c.gcov".format(self.path, self.name))
+                self.results.append(GcovResults(statements, branches))
+
+                # Todo: run this command when we are done parsing stuff!
+                command = "rm {0}.gcno {1}.gcda".format(self.name, self.name)
+                #Benchmark.run_command(command)
+                break
+                #pass
+
+    """
+    Retrieve each mutation from the program folder
+    This will return a path for all mutations needed
+    testing
+    """
     def get_mutations_as_string(self):
         string = ""
         for x in self.mutations:
             string = string + "\t" + x
         return string
 
+    """
+    wrapper to run a command and capture the output
+    """
     @staticmethod
     def run_command(command):
         print command
         p = subprocess.Popen(command.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = p.communicate()
-        print out
-        print err
+        return out, err
 
     def __str__(self):
         string = "Name: " + self.name + "\nCompilation: " + self.compile + "\nExample: "
