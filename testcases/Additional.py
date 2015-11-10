@@ -1,7 +1,6 @@
-from testcases.TestCase import TestCase
 
 
-class Additional(TestCase):
+class Additional(object):
 
     """
     Iteratively selects a test case which yields the greatest branch coverage,
@@ -10,4 +9,4 @@ class Additional(TestCase):
     """
 
     def __init__(self):
-        super(TestCase, self).__init__()
+        pass

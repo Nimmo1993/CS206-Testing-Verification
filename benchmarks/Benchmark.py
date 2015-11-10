@@ -1,3 +1,4 @@
+from __future__ import print_function
 from structures.GcovResults import GcovResults
 import os
 import subprocess
@@ -41,7 +42,7 @@ class Benchmark(object):
     __gcov_out = "gcov_out"
     __gcc = "gcc -fprofile-arcs -ftest-coverage -fPIC -o {0}".format(__gcc_out)
     __gcov_obj_file = "--object-file executable"
-    __gcov = "gcov -abc"
+    __gcov = "gcov -bc"
     __universe = "universe.txt"
 
     def __init__(self, path, line):
@@ -65,7 +66,7 @@ class Benchmark(object):
                     self.mutations.append(subdirs)
 
         # this is where we will store the results for our tests
-        self.results = GcovResults()
+        self.results = []
         # run the tests on our non-mutated program
         self.run_tests()
 
@@ -84,18 +85,16 @@ class Benchmark(object):
                 command = "{0} {1}{2}.c".format(Benchmark.__gcov, self.path, self.name)
                 Benchmark.run_command(command)
 
-                # Pass the path to the newly created gcov file in order to parse what we need
-                statements = GcovResults.parse_statements("{0}{1}.c.gcov".format(self.path, self.name))
-                branches = GcovResults.parse_branches("{0}{1}.c.gcov".format(self.path, self.name))
-                self.results.add_branch(branches)
-                self.results.add_statement(statements)
+                # parse the gcov results
+                self.results.append(GcovResults.parse_gcov("{0}{1}.c.gcov".format(self.path, self.name)))
 
                 # Todo: run this command when we are done parsing stuff!
                 command = "rm {0}.gcno {1}.gcda".format(self.name, self.name)
-                #Benchmark.run_command(command)
+                Benchmark.run_command(command)
                 x += 1
                 break
-                #pass
+                pass
+        #print(self.results, file="/Users/jason/Desktop/cs206/tcas.results")
 
     """
     Retrieve each mutation from the program folder
@@ -113,7 +112,7 @@ class Benchmark(object):
     """
     @staticmethod
     def run_command(command):
-        print command
+        print(command)
         p = subprocess.Popen(command.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = p.communicate()
         return out, err

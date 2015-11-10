@@ -14,51 +14,28 @@ class GcovResults(object):
         self.statement_coverage = StatementCoverage()
         self.branch_coverage = BranchCoverage()
 
-    def add_statement(self, statement):
-        self.statement_coverage.statements.append(statement)
-
-    def add_branch(self, branch):
-        self.branch_coverage.branches.append(branch)
-
-    """
-    Parses the statement coverage from a gcov input file
-    """
     @staticmethod
-    def parse_statements(file_loc):
-        functions = []
-        with open(file_loc) as f:
-            for line in f:
-                split = line.split(" ")
-                if split[0] == "function":
-                    functions.append({'name': split[1], 'returned': int(split[5].replace("%", "")),
-                                      'blocks_executed': int(split[8].replace("%", "").strip())})
-        return functions
-
-    """
-    Parses the branch coverage from a gcov input file
-    """
-    @staticmethod
-    def parse_branches(file_loc):
-        # this maps the methods->branch
+    def parse_gcov(path):
+        results = {}
+        line_number = 0
+        still_branch = False
         branches = []
-        # this holds the branches in the particular function
-        branch = []
-        # allows us to keep track of which method we are actually visiting
-        prev_function = ""
-        curr_function = ""
-        with open(file_loc) as f:
+        with open("/Users/jason/Desktop/cs206/benchmarks/tcas/tcas.c.gcov") as f:
             for line in f:
-                split = line.split(" ")
-                # We must maintain the function name for each branch
-                if split[0] == "function":
-                    curr_function = split[1]
-                    # add the branches to the blo
-                    branches.append({'name':prev_function, 'branches': branch})
-                    # update the previous function name!
-                    prev_function = curr_function
-                    # reset our branch variable
-                    branch = []
-                if split[0] == "branch":
-                    branch.append({'id': int(split[2]), 'executed': int(split[4].replace("%", "").strip())})
+                split = line.split()
+                print split
+                # Junk or garbage input from gcov
+                if split[0] == "-:" or split[0] == "$$$$$:" or split[0] == "#####:" or split[0] == "function":
+                    continue
 
-        return branches
+                # We care about branches and line numbers, hence this block!
+                if split[0] != "branch":
+                    if still_branch:
+                        results[line_number] = branches
+                        branches = []
+                        still_branch = False
+                    line_number = int(split[1].strip(":}"))
+                else:
+                    branches.append(True if int(split[3]) > 0 else False)
+                    still_branch = True
+        return results
