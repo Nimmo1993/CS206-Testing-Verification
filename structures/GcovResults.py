@@ -1,6 +1,7 @@
 from StatementCoverage import StatementCoverage
 from BranchCoverage import BranchCoverage
 
+
 class GcovResults(object):
 
     """
@@ -9,9 +10,15 @@ class GcovResults(object):
 
     """
 
-    def __init__(self, statements, branches):
-        self.statements = StatementCoverage(statements)
-        self.branches = BranchCoverage(branches)
+    def __init__(self):
+        self.statement_coverage = StatementCoverage()
+        self.branch_coverage = BranchCoverage()
+
+    def add_statement(self, statement):
+        self.statement_coverage.statements.append(statement)
+
+    def add_branch(self, branch):
+        self.branch_coverage.branches.append(branch)
 
     """
     Parses the statement coverage from a gcov input file

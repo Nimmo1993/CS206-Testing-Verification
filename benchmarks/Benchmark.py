@@ -65,7 +65,7 @@ class Benchmark(object):
                     self.mutations.append(subdirs)
 
         # this is where we will store the results for our tests
-        self.results = []
+        self.results = GcovResults()
         # run the tests on our non-mutated program
         self.run_tests()
 
@@ -73,6 +73,7 @@ class Benchmark(object):
     Run the tests available to the program
     """
     def run_tests(self):
+        x = 0
         with open(self.path + Benchmark.__universe) as f:
             for line in f:
                 # run the test set given our newly compiled file
@@ -86,11 +87,13 @@ class Benchmark(object):
                 # Pass the path to the newly created gcov file in order to parse what we need
                 statements = GcovResults.parse_statements("{0}{1}.c.gcov".format(self.path, self.name))
                 branches = GcovResults.parse_branches("{0}{1}.c.gcov".format(self.path, self.name))
-                self.results.append(GcovResults(statements, branches))
+                self.results.add_branch(branches)
+                self.results.add_statement(statements)
 
                 # Todo: run this command when we are done parsing stuff!
                 command = "rm {0}.gcno {1}.gcda".format(self.name, self.name)
                 #Benchmark.run_command(command)
+                x += 1
                 break
                 #pass
 
