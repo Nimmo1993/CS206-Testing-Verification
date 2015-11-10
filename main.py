@@ -1,4 +1,5 @@
 from benchmarks.Benchmark import Benchmark
+from testcases.TestSuite import TestSuite
 import sys
 
 
@@ -11,7 +12,8 @@ def main():
             break
     # print or run all benchmarks from here
     for (x, benchmark) in enumerate(benchmarks):
-        pass
+        test_suite = TestSuite(benchmark.results)
+        break
         ###
         # print benchmark
         ###

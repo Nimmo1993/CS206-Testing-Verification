@@ -1,4 +1,3 @@
-from __future__ import print_function
 from structures.GcovResults import GcovResults
 import os
 import subprocess
@@ -33,7 +32,8 @@ class Benchmark(object):
         gcc -fprofile-arcs -ftest-coverage -fPIC input.c -o out
         This creates 2 files: [exec].gcda and [exec].gcno
         we then execute: ./out [args]
-        then run: gcov -abci input.c
+        then run: gcov -abc input.c
+        rm input.c.gcov
         and repeat
         from there we can run gcov and see exactly what happens
         gcov -a -b -c -o gcov_out --object-file executable './executable arg1 arg2 argN'"
@@ -86,15 +86,44 @@ class Benchmark(object):
                 Benchmark.run_command(command)
 
                 # parse the gcov results
-                self.results.append(GcovResults.parse_gcov("{0}{1}.c.gcov".format(self.path, self.name)))
+                self.results.append(self.parse_gcov("{0}{1}.c.gcov".format(self.path, self.name)))
 
                 # Todo: run this command when we are done parsing stuff!
                 command = "rm {0}.gcno {1}.gcda".format(self.name, self.name)
                 Benchmark.run_command(command)
                 x += 1
                 break
-                pass
-        #print(self.results, file="/Users/jason/Desktop/cs206/tcas.results")
+                #pass
+        #with open("/Users/jason/Desktop/cs206/tcas.results", 'a') as f:
+            #f.write(str(self.results))
+
+    """
+    Parse the gcov output for the branch information
+    """
+    def parse_gcov(self, path):
+        line_number = 0
+        still_branch = False
+        branch = []
+        statements = {}
+        branches = {}
+        with open(path) as f:
+            for line in f:
+                split = line.split()
+                # Junk or garbage input from gcov
+                if split[0] == "-:" or split[0] == "$$$$$:" or split[0] == "function" or "-block" in split[1]:
+                    continue
+
+                if split[0] != "branch":
+                    if still_branch:
+                        branches[line_number] = branch
+                        branch = []
+                        still_branch = False
+                    line_number = int(split[1].strip(":}"))
+                    statements[line_number] = True if split[0].strip(":") != "#####" else False
+                else:
+                    branch.append(True if int(split[3]) > 0 else False)
+                    still_branch = True
+        self.results.append({'statements': statements, 'branches': branches})
 
     """
     Retrieve each mutation from the program folder

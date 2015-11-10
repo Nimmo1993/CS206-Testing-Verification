@@ -8,5 +8,6 @@ class Additional(object):
     all branches are covered
     """
 
-    def __init__(self):
+    def __init__(self, tests):
+        self.tests = tests
         pass

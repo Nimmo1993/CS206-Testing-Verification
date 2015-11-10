@@ -8,5 +8,10 @@ class Random(object):
 
     def __init__(self, tests):
         self.tests = tests
-        self.selected_cases = random.sample(self.tests, random.randint(10-15))
+        self.coverage = 0
+        self.coverage_set = self.tests[0]
+        print self.coverage_set
+        pass
+
+    def build_coverage_set(self):
         pass
