@@ -1,6 +1,9 @@
 from structures.GcovResults import GcovResults
 import os
 import subprocess
+import json
+from functools import partial
+from operator import is_not
 
 
 class Benchmark(object):
@@ -86,16 +89,18 @@ class Benchmark(object):
                 Benchmark.run_command(command)
 
                 # parse the gcov results
-                self.results.append(self.parse_gcov("{0}{1}.c.gcov".format(self.path, self.name)))
+                self.parse_gcov("{0}{1}.c.gcov".format(self.path, self.name))
 
                 # Todo: run this command when we are done parsing stuff!
                 command = "rm {0}.gcno {1}.gcda".format(self.name, self.name)
                 Benchmark.run_command(command)
                 x += 1
-                break
-                #pass
-        #with open("/Users/jason/Desktop/cs206/tcas.results", 'a') as f:
-            #f.write(str(self.results))
+                if x > 9:
+                    break
+                else:
+                    continue
+        # with open("/Users/jason/Desktop/cs206/tcas.results", 'a') as f:
+            # f.write(json.dumps(self.results))
 
     """
     Parse the gcov output for the branch information
@@ -113,11 +118,15 @@ class Benchmark(object):
                 if split[0] == "-:" or split[0] == "$$$$$:" or split[0] == "function" or "-block" in split[1]:
                     continue
 
+                # If we don't have a branch, parse it as a regular line
+                # and add the previous branches to the list
                 if split[0] != "branch":
+                    # we have a branch and we need to save it, then progress our line number
                     if still_branch:
                         branches[line_number] = branch
                         branch = []
                         still_branch = False
+                    # Get the line number and add it to the statements
                     line_number = int(split[1].strip(":}"))
                     statements[line_number] = True if split[0].strip(":") != "#####" else False
                 else:
@@ -141,7 +150,7 @@ class Benchmark(object):
     """
     @staticmethod
     def run_command(command):
-        print(command)
+        #print(command)
         p = subprocess.Popen(command.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = p.communicate()
         return out, err

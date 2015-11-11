@@ -1,5 +1,7 @@
 import re
 import ast
+import json
+from testcases.TestSuite import TestSuite
 
 """
 http://www.cs.odu.edu/~cs333/website-latest/Lectures/wbtesting/pages/gcov.html
@@ -35,7 +37,11 @@ def parse_gcov():
     return branches
 
 def test_test_suite():
-    with open("/Users/jason/Desktop/cs206/benchmarks/")
+    tests = []
+    with open("/Users/jason/Desktop/cs206/tcas.results") as f:
+        for line in f:
+            tests = json.loads(line)
+    test = TestSuite(tests)
 
 
 if __name__ == "__main__":
