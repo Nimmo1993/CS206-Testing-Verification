@@ -9,23 +9,28 @@ class Random(object):
     def __init__(self, tests):
         self.tests = tests
         self.coverage = 0
-        self.branch_coverage_set = {}
-        self.statement_coverage_set = {}
+        self.branch_test_cases = {}
+        self.statement_test_cases = {}
+        self.statement_coverage_cases = []
+        self.branch_coverage_cases = []
         self.results = []
 
         for x in self.tests[0]['branches']:
-            self.branch_coverage_set[int(x)] = []
+            self.branch_test_cases[int(x)] = []
             for index in self.tests[0]['branches'].get(x):
-                self.branch_coverage_set[int(x)].append(False)
+                self.branch_test_cases[int(x)].append(False)
 
         for x in self.tests[0]['statements']:
-            self.statement_coverage_set[int(x)] = []
-            self.statement_coverage_set[int(x)].append(False)
+            self.statement_test_cases[int(x)] = []
+            self.statement_test_cases[int(x)].append(False)
 
         # randomly shuffle the test cases
         random.shuffle(self.tests)
         self.build_branch_coverage_set()
         self.build_statement_coverage_set()
+
+        #print self.statement_coverage_cases
+        print self.branch_coverage_cases
 
     """
     1) check each element in the input against the coverage set
@@ -33,30 +38,43 @@ class Random(object):
     3) continue to do this until you have maximum coverage
     """
     def build_statement_coverage_set(self):
-        #print self.statement_coverage_set
+        found_solution = False
         x = 0
         for index in self.tests:
             save_test = False
             for key in index['statements']:
-                if index['statements'].get(key) != self.statement_coverage_set.get(key)[0] \
+                #print "Random line no: {0} test case: {1}\t current coverage: {2}".format(key, index['statements'].get(key), self.statement_test_cases.get(key)[0])
+                if index['statements'].get(key) != self.statement_test_cases.get(key)[0] \
                         and index['statements'].get(key) is True:
-                    print "{0}:{1}\t{2}:{3}".format(key, index['statements'].get(key), key, self.statement_coverage_set.get(key)[0])
-                    self.statement_coverage_set.get(key)[0] = index['statements'].get(key)
+                    self.statement_test_cases.get(key)[0] = index['statements'].get(key)
                     save_test = True
             # See if we need to save the test
             if save_test:
-                print "adding: ", index
-                self.results.append(index)
-                save_test = False
+                self.statement_coverage_cases.append(index['statements'])
             # See if we are done with test coverage
-            if TestSuite.TestSuite.is_statement_coverage_complete(self.statement_coverage_set) is True:
+            if TestSuite.TestSuite.is_statement_coverage_complete(self.statement_test_cases) is True:
                 break
-        print "-----------"
-        print self.statement_coverage_set
-
-    pass
+            x += 1
+        if not found_solution:
+            print "Random: could not achieve 100% statement coverage"
 
     def build_branch_coverage_set(self):
-        while TestSuite.TestSuite.is_branch_coverage_complete(self.branch_coverage_set):
-            break
+        found_solution = False
+        for index in self.tests:
+            save_test = False
+            for key in index['branches']:
+                x = 0
+                for boolean in index['branches'].get(key):
+                    if boolean != self.branch_test_cases.get(key)[x] and boolean is True:
+                        self.branch_test_cases.get(key)[x] = boolean
+                        save_test = True
+                    x += 1
+            if save_test:
+                self.branch_coverage_cases.append(index['branches'])
+            if TestSuite.TestSuite.is_branch_coverage_complete(self.branch_test_cases) is True:
+                break
+        if not found_solution:
+            print "Random: could not achieve 100% branch coverage"
+
+        # print self.branch_test_cases
     pass

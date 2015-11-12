@@ -91,14 +91,14 @@ class Benchmark(object):
                 # parse the gcov results
                 self.parse_gcov("{0}{1}.c.gcov".format(self.path, self.name))
 
-                # Todo: run this command when we are done parsing stuff!
-                command = "rm {0}.gcno {1}.gcda".format(self.name, self.name)
+                command = "rm {0}{1}.gcno {2}{3}.gcda".format(self.path, self.name, self.path, self.name)
                 Benchmark.run_command(command)
                 x += 1
-                if x > 9:
+                if x > 99:
                     break
                 else:
                     continue
+        print "Benchmark: size of results: ", len(self.results)
         # with open("/Users/jason/Desktop/cs206/tcas.results", 'a') as f:
             # f.write(json.dumps(self.results))
 
@@ -150,7 +150,7 @@ class Benchmark(object):
     """
     @staticmethod
     def run_command(command):
-        #print(command)
+        # print(command)
         p = subprocess.Popen(command.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = p.communicate()
         return out, err

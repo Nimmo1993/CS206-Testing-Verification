@@ -15,20 +15,29 @@ class TestSuite(object):
         self.branch = Branch.Branch(self.tests)
 
     """
-    Todo: these are too naive, change this to be a total count, not a first find exit
+    total_trues acts as the counter for total coverage.
     """
     @staticmethod
-    def is_branch_coverage_complete(list):
-        for x in list:
-            for index in list.get(x):
-                if index is False:
-                    return False
-        return True
+    def is_branch_coverage_complete(value):
+        total_taken = 0
+        total_branches = 0
+        for x in value:
+            for index in value.get(x):
+                total_branches += 1
+                if index is True:
+                    total_taken += 1
+        return total_taken == total_branches
 
+    """
+    trues acts as a counter for the number of executed statement.
+    We can only stop when we have as many trues as there are
+    statements covered in the test case
+    """
     @staticmethod
-    def is_statement_coverage_complete(list):
-        for x in list:
-            for index in list[x]:
-                if index is False:
-                    return False
-        return True
+    def is_statement_coverage_complete(value):
+        total_trues = 0
+        for x in value:
+            for index in value[x]:
+                if index is True:
+                    total_trues += 1
+        return total_trues == len(value)
