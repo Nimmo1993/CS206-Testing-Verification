@@ -1,6 +1,6 @@
-from testcases.Additional import Additional
-from testcases.Random import Random
-from testcases.Branch import Branch
+from prioritizations.Additional import Additional
+from prioritizations.Random import Random
+from prioritizations.Branch import Branch
 
 
 class BranchCoverage(object):

@@ -1,5 +1,7 @@
 from benchmarks.Benchmark import Benchmark
-from testcases.TestSuite import TestSuite
+from prioritizations.Branch import Branch
+from prioritizations.Random import Random
+from prioritizations.Additional import Additional
 import sys
 
 
@@ -12,7 +14,8 @@ def main():
             break
     # print or run all benchmarks from here
     for (x, benchmark) in enumerate(benchmarks):
-        test_suite = TestSuite(benchmark.results)
+        branch = Branch(benchmark.results)
+        # random = Random(benchmark.results)
         break
         ###
         # print benchmark

@@ -1,18 +1,16 @@
-import Random
-import Branch
-import Additional
 
 
-class TestSuite(object):
+class Prioritization(object):
     """
     A class which handles the test case generation of our required classes
     """
 
     def __init__(self, tests):
         self.tests = tests
-        self.random = Random.Random(self.tests)
-        self.additional = Additional.Additional(self.tests)
-        self.branch = Branch.Branch(self.tests)
+        self.statement_coverage_cases = []
+        self.branch_coverage_cases = []
+        self.results = []
+        pass
 
     """
     total_trues acts as the counter for total coverage.

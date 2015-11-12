@@ -1,19 +1,17 @@
 import random
-import TestSuite
+from .Prioritization import Prioritization
 
-class Random(object):
+
+class Random(Prioritization):
     """
     Random test case prioritization
     """
 
     def __init__(self, tests):
-        self.tests = tests
+        Prioritization.__init__(self, tests)
         self.coverage = 0
         self.branch_test_cases = {}
         self.statement_test_cases = {}
-        self.statement_coverage_cases = []
-        self.branch_coverage_cases = []
-        self.results = []
 
         for x in self.tests[0]['branches']:
             self.branch_test_cases[int(x)] = []
@@ -52,7 +50,7 @@ class Random(object):
             if save_test:
                 self.statement_coverage_cases.append(index['statements'])
             # See if we are done with test coverage
-            if TestSuite.TestSuite.is_statement_coverage_complete(self.statement_test_cases) is True:
+            if Prioritization.is_statement_coverage_complete(self.statement_test_cases) is True:
                 break
             x += 1
         if not found_solution:
@@ -71,7 +69,7 @@ class Random(object):
                     x += 1
             if save_test:
                 self.branch_coverage_cases.append(index['branches'])
-            if TestSuite.TestSuite.is_branch_coverage_complete(self.branch_test_cases) is True:
+            if Prioritization.is_branch_coverage_complete(self.branch_test_cases) is True:
                 break
         if not found_solution:
             print "Random: could not achieve 100% branch coverage"

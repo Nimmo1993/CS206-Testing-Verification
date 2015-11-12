@@ -1,9 +1,5 @@
-from structures.GcovResults import GcovResults
 import os
 import subprocess
-import json
-from functools import partial
-from operator import is_not
 
 
 class Benchmark(object):
@@ -57,6 +53,7 @@ class Benchmark(object):
         self.test_cases = b[4]
         self.path = path + self.name + "/"
         self.mutations = []
+        self.tag = "[Benchmark]\t"
 
         # Compile the file with the necessary gcov flags
         Benchmark.run_command("{0} {1}.c".format(Benchmark.__gcc, self.name))
@@ -73,11 +70,23 @@ class Benchmark(object):
         # run the tests on our non-mutated program
         self.run_tests()
 
+        # print self.results[0].get('meta').get('statements').get('covered')
+
+        # Sort the elements, though they should be in numerical order already
+        for element in self.results:
+            element.get('meta').get('statements').get('covered').sort()
+            element.get('meta').get('statements').get('not').sort()
+            element.get('meta').get('branches').get('covered').sort()
+            element.get('meta').get('branches').get('not').sort()
+
+        # print self.results[0].get('meta').get('statements').get('covered')
+
     """
     Run the tests available to the program
     """
     def run_tests(self):
         x = 0
+        print "{0}Beginning to run tests for {0}".format(self.tag, self.name)
         with open(self.path + Benchmark.__universe) as f:
             for line in f:
                 # run the test set given our newly compiled file
@@ -89,28 +98,34 @@ class Benchmark(object):
                 Benchmark.run_command(command)
 
                 # parse the gcov results
-                self.parse_gcov("{0}{1}.c.gcov".format(self.path, self.name))
+                self.parse_gcov("{0}{1}.c.gcov".format(self.path, self.name), x)
 
                 command = "rm {0}{1}.gcno {2}{3}.gcda".format(self.path, self.name, self.path, self.name)
                 Benchmark.run_command(command)
                 x += 1
-                if x > 99:
+                if x > 9:
                     break
                 else:
                     continue
-        print "Benchmark: size of results: ", len(self.results)
+        print "{0}size of results: {1}".format(self.tag, len(self.results))
         # with open("/Users/jason/Desktop/cs206/tcas.results", 'a') as f:
             # f.write(json.dumps(self.results))
 
     """
     Parse the gcov output for the branch information
     """
-    def parse_gcov(self, path):
+    def parse_gcov(self, path, test_number):
         line_number = 0
+        # lets us know whether we are parsing branches or lines
         still_branch = False
+        # container for all the branches in a set
         branch = []
         statements = {}
         branches = {}
+        branches_covered = []
+        branches_not_covered = []
+        statements_covered = []
+        statements_not_covered = []
         with open(path) as f:
             for line in f:
                 split = line.split()
@@ -129,10 +144,20 @@ class Benchmark(object):
                     # Get the line number and add it to the statements
                     line_number = int(split[1].strip(":}"))
                     statements[line_number] = True if split[0].strip(":") != "#####" else False
+                    if statements[line_number] is True:
+                        statements_covered.append(line_number)
+                    else:
+                        statements_not_covered.append(line_number)
                 else:
                     branch.append(True if int(split[3]) > 0 else False)
+                    if branch[len(branch) - 1] is True:
+                        branches_covered.append(line_number)
+                    else:
+                        branches_not_covered.append(line_number)
                     still_branch = True
-        self.results.append({'statements': statements, 'branches': branches})
+        meta = {'branches': {'covered': branches_covered, 'not': branches_not_covered},
+                'statements': {'covered': statements_covered, 'not': statements_not_covered}}
+        self.results.append({'statements': statements, 'branches': branches, 'meta': meta, 'id': test_number})
 
     """
     Retrieve each mutation from the program folder

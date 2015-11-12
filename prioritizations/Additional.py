@@ -1,6 +1,7 @@
+from .Prioritization import Prioritization
 
 
-class Additional(object):
+class Additional(Prioritization):
 
     """
     Iteratively selects a test case which yields the greatest branch coverage,
@@ -9,5 +10,5 @@ class Additional(object):
     """
 
     def __init__(self, tests):
-        self.tests = tests
+        Prioritization.__init__(self, tests)
         pass
