@@ -1,5 +1,6 @@
 import os
 import subprocess
+import random
 
 
 class Benchmark(object):
@@ -23,6 +24,10 @@ class Benchmark(object):
     mutations: list of mutations to test against, a list of paths which contain
         all available mutations for the benchmark
     results: where to store the coverage results
+
+    the results data structure is as follows:
+        results[test_id] = {statements: {coverage={line:True||False}, covered: x, not: x, id: test_id},
+                            branches: {coverage={x:[True||False, ...n], covered: x, not: x, id: test_id}}
     """
 
     """
@@ -66,20 +71,9 @@ class Benchmark(object):
                     self.mutations.append(subdirs)
 
         # this is where we will store the results for our tests
-        self.results = []
+        self.results = {}
         # run the tests on our non-mutated program
         self.run_tests()
-
-        # print self.results[0].get('meta').get('statements').get('covered')
-
-        # Sort the elements, though they should be in numerical order already
-        for element in self.results:
-            element.get('meta').get('statements').get('covered').sort()
-            element.get('meta').get('statements').get('not').sort()
-            element.get('meta').get('branches').get('covered').sort()
-            element.get('meta').get('branches').get('not').sort()
-
-        # print self.results[0].get('meta').get('statements').get('covered')
 
     """
     Run the tests available to the program
@@ -155,10 +149,15 @@ class Benchmark(object):
                     else:
                         branches_not_covered.append(line_number)
                     still_branch = True
-        meta = {'branches': {'covered': branches_covered, 'not': branches_not_covered},
-                'statements': {'covered': statements_covered, 'not': statements_not_covered}}
-        self.results.append({'statements': statements, 'branches': branches, 'meta': meta, 'id': test_number})
-
+        self.results[test_number] = {'statements': {'coverage': statements,
+                                                    'covered': statements_covered, 'not': statements_not_covered,
+                                                    'id': test_number, 'covered_count': random.randint(1, 100),
+                                                    #'id': test_number, 'covered_count': len(statements_covered),
+                                                    'not_count': len(statements_not_covered)},
+                                     'branches': {'coverage': branches,
+                                                  'covered': branches_covered, 'not': branches_not_covered,
+                                                  'id': test_number, 'covered_count': len(branches_covered),
+                                                  'not_count': len(branches_not_covered)}}
     """
     Retrieve each mutation from the program folder
     This will return a path for all mutations needed

@@ -1,6 +1,6 @@
 from prioritizations.Additional import Additional
 from prioritizations.Random import Random
-from prioritizations.Branch import Branch
+from prioritizations.Total import Branch
 
 
 class BranchCoverage(object):

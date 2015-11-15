@@ -7,9 +7,14 @@ class Prioritization(object):
 
     def __init__(self, tests):
         self.tests = tests
-        self.statement_coverage_cases = []
-        self.branch_coverage_cases = []
-        self.results = []
+        self.statement_coverage_tests = []
+        self.branch_coverage_tests = []
+
+        for key in self.tests:
+            self.statement_coverage_tests.append(self.tests[key].get('statements'))
+            self.branch_coverage_tests.append(self.tests[key].get('branches'))
+
+        self.results = {'branches': [], 'statements': []}
         pass
 
     """

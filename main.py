@@ -1,5 +1,5 @@
 from benchmarks.Benchmark import Benchmark
-from prioritizations.Branch import Branch
+from prioritizations.Total import Total
 from prioritizations.Random import Random
 from prioritizations.Additional import Additional
 import sys
@@ -14,7 +14,9 @@ def main():
             break
     # print or run all benchmarks from here
     for (x, benchmark) in enumerate(benchmarks):
-        branch = Branch(benchmark.results)
+        random = Random(benchmark.results)
+        total = Total(benchmark.results)
+        #print branch.results
         # random = Random(benchmark.results)
         break
         ###
