@@ -114,6 +114,10 @@ class Benchmark(object):
 
                 x += 1
 
+                if x > 10:
+                    print "{0}quiting at {1}".format(self.tag, x)
+                    break
+
     """
     Parse the gcov output for the branch information
     """

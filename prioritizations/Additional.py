@@ -83,6 +83,7 @@ class Additional(Prioritization):
         # We automatically take the first element as it maintains the highest coverage
         self.results['statements'].append(self.statement_coverage_tests[0])
         self.results['branches'].append(self.branch_coverage_tests[0])
+
         del self.statement_coverage_tests[0]
         del self.branch_coverage_tests[0]
 
@@ -104,20 +105,26 @@ class Additional(Prioritization):
         Run for statements
         """
         for test in self.statement_coverage_tests:
+            # see if we can pare anything from the list before we begin...
             if Prioritization.same_coverage(test['not'], self.results['statements'][-1]['not']) is False:
                 temp_statements.append(test)
 
-        while len(temp_statements) > 0:
+        print "pre Length of temp_statements: ", len(temp_statements)
+
+        count = 0
+        while len(temp_statements) > 0 and count < 4:
             print "Length of temp_statements: ", len(temp_statements)
-            temp_statements = sorted(temp_statements, key=lambda x: x['covered_count'], reverse=True)
+            temp_statements = sorted(temp_statements, key=lambda covered: covered['covered_count'], reverse=True)
             for x in range(0, len(temp_statements)):
+                print x
                 if Prioritization.same_coverage(temp_statements[x]['not'],
                                                 self.statement_coverage_tests[-1]['not']) is True:
                     del temp_statements[x]
-                else:
-                    temp_statements.append(temp_statements[x])
+                    print "len:",len(temp_statements)
+            count += 1
             pass
 
+        return
         """
         Run for branches
         """
@@ -126,7 +133,8 @@ class Additional(Prioritization):
             if not Prioritization.same_coverage(test['not'], self.results['branches'][-1]['not']):
                 temp_branches.append(test)
 
-        while len(temp_branches) > 0:
+        count = 0
+        while len(temp_branches) > 0 and count < 4:
             # we must sort the list at each iteration according to the algorithm
             temp_branches = sorted(temp_branches, key=lambda x: x['covered_count'], reverse=True)
             for x in range(0, len(temp_branches)):
@@ -135,4 +143,5 @@ class Additional(Prioritization):
                     del temp_branches[x]
                 else:
                     temp_branches.append(temp_branches[x])
+            count += 1
             pass
