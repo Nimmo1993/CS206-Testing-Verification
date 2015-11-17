@@ -90,14 +90,15 @@ class Benchmark(object):
                 self.tests.append(line)
                 # run the test set given our newly compiled file
                 command = "./{0} {1}".format(Benchmark.__gcc_out, line)
-                Benchmark.run_command(command)
+                out = Benchmark.run_command(command)
+                output = out[0].strip()
 
                 # Create the .gcov file from the gcno and gcda data
                 command = "{0} {1}.c".format(Benchmark.__gcov, self.name)
-                Benchmark.run_command(command)
+                out = Benchmark.run_command(command)
 
                 # parse the gcov results
-                self.parse_gcov("{0}.c.gcov".format(self.name), x)
+                self.parse_gcov("{0}.c.gcov".format(self.name), x, output)
 
                 command = "rm {0}.gcno {1}.gcda".format(self.name, self.name)
                 Benchmark.run_command(command)
@@ -111,7 +112,7 @@ class Benchmark(object):
     """
     Parse the gcov output for the branch information
     """
-    def parse_gcov(self, path, test_number):
+    def parse_gcov(self, path, test_number, output):
         line_number = 0
         # lets us know whether we are parsing branches or lines
         still_branch = False
@@ -157,13 +158,14 @@ class Benchmark(object):
                     still_branch = True
         self.results[test_number] = {'statements': {'coverage': statements,
                                                     'covered': statements_covered, 'not': statements_not_covered,
-                                                    'id': test_number, 'covered_count': random.randint(1, 100),
-                                                    #'id': test_number, 'covered_count': len(statements_covered),
-                                                    'not_count': len(statements_not_covered)},
+                                                    'id': test_number, 'covered_count': len(statements_covered),
+                                                    'not_count': len(statements_not_covered),
+                                                    'output': output},
                                      'branches': {'coverage': branches,
                                                   'covered': branches_covered, 'not': branches_not_covered,
                                                   'id': test_number, 'covered_count': len(branches_covered),
-                                                  'not_count': len(branches_not_covered)}}
+                                                  'not_count': len(branches_not_covered),
+                                                  'output': output}}
 
     """
     Run the different test cases on the mutant programs

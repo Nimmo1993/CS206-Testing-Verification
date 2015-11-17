@@ -18,6 +18,18 @@ class Prioritization(object):
         pass
 
     """
+    Checks for similarness of test cases
+    """
+    @staticmethod
+    def same_coverage(s1, s2):
+        if len(s1) is not len(s2):
+            return False
+        for x in range(0, len(s1)):
+            if s1[x] != s2[x]:
+                return False
+        return True
+
+    """
     total_trues acts as the counter for total coverage.
     """
     @staticmethod

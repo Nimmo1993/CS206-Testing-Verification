@@ -55,7 +55,10 @@ same as addtl-st, except that it uses function and branch
 coverage information instead of statement coverage information[11][12]
 [13].
 
+Sort the cases by coverage, pull one, resort based on additional coverage left
+take the not covered top one, intersect with all other sets, then resort remainder, pull form top, repeat
 """
+
 
 class Additional(Prioritization):
 
@@ -67,4 +70,66 @@ class Additional(Prioritization):
 
     def __init__(self, tests):
         Prioritization.__init__(self, tests)
+
+        for test in self.tests:
+            self.statement_coverage_tests.append(self.tests[test].get('statements'))
+            self.branch_coverage_tests.append(self.tests[test].get('branches'))
+
+        # sort the branch and statement by their coverage count
+        self.statement_coverage_tests = sorted(self.statement_coverage_tests,
+                                               key=lambda x: x['covered_count'], reverse=True)
+        self.branch_coverage_tests = sorted(self.branch_coverage_tests, key=lambda x: x['covered_count'], reverse=True)
+
+        # We automatically take the first element as it maintains the highest coverage
+        self.results['statements'].append(self.statement_coverage_tests[0])
+        self.results['branches'].append(self.branch_coverage_tests[0])
+        del self.statement_coverage_tests[0]
+        del self.branch_coverage_tests[0]
+
+        self.build_coverage()
+        print self.results
         pass
+
+    """
+    Sort the lists, add the top element from the list to result, remove it from the test set
+    compare all elements remaining to the last element on the results
+    add whichever elements are different to a new list.
+    repeat
+    """
+    def build_coverage(self):
+
+        temp_statements = []
+        temp_branches = []
+
+        """
+        Run for statements
+        """
+        for test in self.statement_coverage_tests:
+            if Prioritization.same_coverage(test['not'], self.results['statements'][-1]['not']) is False:
+                temp_statements.append(test)
+
+        while len(temp_statements) > 0:
+            temp_statements = sorted(temp_statements, key=lambda x: x['covered_count'], reverse=True)
+            for x in range(0, len(temp_statements)):
+                if Prioritization.same_coverage(temp_statements[x]['not'],
+                                                self.statement_coverage_tests[-1]['not']) is True:
+                    del temp_statements[x]
+                else:
+                    temp_statements.append(temp_statements[x])
+            pass
+
+        """
+        Run for branches
+        """
+        for test in self.branch_coverage_tests:
+            if not Prioritization.same_coverage(test['not'], self.results['branches'][-1]['not']):
+                temp_branches.append(test)
+
+        while len(temp_branches) > 0:
+            temp_branches = sorted(temp_branches, key=lambda x: x['covered_count'], reverse=True)
+            for x in range(0, len(temp_branches)):
+                if Prioritization.same_coverage(temp_branches[x]['not'], self.branch_coverage_tests[-1]['not']) is True:
+                    del temp_branches[x]
+                else:
+                    temp_branches.append(temp_branches[x])
+            pass
