@@ -43,11 +43,11 @@ class Benchmark(object):
         gcov -a -b -c -o gcov_out --object-file executable './executable arg1 arg2 argN'"
     """
     __gcc_out = "out"
+    __universe = "universe.txt"
+    __gcc = "gcc --coverage -fprofile-arcs -ftest-coverage -fPIC -o"
     __gcov_out = "gcov_out"
-    __gcc = "gcc -fprofile-arcs -ftest-coverage -fPIC -o {0}".format(__gcc_out)
     __gcov_obj_file = "--object-file executable"
     __gcov = "gcov -bc"
-    __universe = "universe.txt"
 
     def __init__(self, path, line):
         b = line.split('~')
@@ -59,9 +59,11 @@ class Benchmark(object):
         self.path = path + self.name + "/"
         self.mutations = []
         self.tag = "[Benchmark]\t"
+        self.tests = []
 
         # Compile the file with the necessary gcov flags
-        Benchmark.run_command("{0} {1}.c".format(Benchmark.__gcc, self.name))
+        Benchmark.run_command("{0} {1}{2} {3}{4}.c"
+                              .format(Benchmark.__gcc, self.path, Benchmark.__gcc_out, self.path, self.name))
 
         # get all the mutations present in the directory
         for subdirs, dirs, files in os.walk(self.path):
@@ -80,9 +82,11 @@ class Benchmark(object):
     """
     def run_tests(self):
         x = 0
-        print "{0}Beginning to run tests for {0}".format(self.tag, self.name)
+        print "{0}Beginning to run tests for {1}".format(self.tag, self.name)
+        os.chdir(self.path)
         with open(self.path + Benchmark.__universe) as f:
             for line in f:
+                self.tests.append(line)
                 # run the test set given our newly compiled file
                 command = "{0}./{1} {2}".format(self.path, Benchmark.__gcc_out, line)
                 Benchmark.run_command(command)
@@ -102,8 +106,6 @@ class Benchmark(object):
                 else:
                     continue
         print "{0}size of results: {1}".format(self.tag, len(self.results))
-        # with open("/Users/jason/Desktop/cs206/tcas.results", 'a') as f:
-            # f.write(json.dumps(self.results))
 
     """
     Parse the gcov output for the branch information
@@ -143,7 +145,10 @@ class Benchmark(object):
                     else:
                         statements_not_covered.append(line_number)
                 else:
-                    branch.append(True if int(split[3]) > 0 else False)
+                    if split[3] == "executed" and split[2] == "never":
+                        branch.append(False)
+                    else:
+                        branch.append(True if int(split[3]) > 0 else False)
                     if branch[len(branch) - 1] is True:
                         branches_covered.append(line_number)
                     else:
@@ -174,7 +179,7 @@ class Benchmark(object):
     """
     @staticmethod
     def run_command(command):
-        # print(command)
+        print(command)
         p = subprocess.Popen(command.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = p.communicate()
         return out, err

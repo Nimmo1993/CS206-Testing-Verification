@@ -15,7 +15,8 @@ def main():
     # print or run all benchmarks from here
     for (x, benchmark) in enumerate(benchmarks):
         random = Random(benchmark.results)
-        total = Total(benchmark.results)
+        total = Total(benchmark.results, benchmark.path, benchmark.name)
+        print total.results
         #print branch.results
         # random = Random(benchmark.results)
         break

@@ -21,7 +21,7 @@ test cases using total branch coverage prioritization.
 Because additional branch coverage prioritization requires
 recalculation of coverage information for each unprioritized
 test case following selection of each test case, its
-cost is O(n2) for programs containing n branches
+cost is O(n^2) for programs containing n branches
 
 T4: Additional statement coverage prioritization. Additional
 statement coverage prioritization is like total coverage
@@ -34,11 +34,11 @@ coverage of statements not yet covered, and then iterates
 until all statements covered by at least one test case have
 been covered. When all statements have been covered, the
 remaining test cases are covered (recursively) by resetting
-all statements to “not covered” and reapplying additional
+all statements to \"not covered\" and reapplying additional
 statement coverage on the remaining test cases.
 For a test suite and program containing m test cases and
 n statements, respectively, the cost of additional statement
-coverage prioritization is Oðm2 nÞ, a factor of m more than
+coverage prioritization is O(m^2 n), a factor of m more than
 total statement coverage prioritization
 
 The additional statement (addtl-st) prioritization technique
@@ -46,7 +46,7 @@ selects, in turn, the next test case that covers the maximum
 number of statements not yet covered in the previous
 round. When no remaining test case can improve the statement
 coverage, the technique will reset all the statements to
-“not covered” and reapply addtl-st on the remaining test
+\"not covered\" and reapply addtl-st on the remaining test
 cases. When more than one test case covers the same number
 of statements not yet covered, it just selects one of them
 randomly. The additional function (addtl-fn) and additional
