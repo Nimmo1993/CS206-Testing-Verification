@@ -87,7 +87,6 @@ class Additional(Prioritization):
         del self.branch_coverage_tests[0]
 
         self.build_coverage()
-        print self.results
         pass
 
     """
@@ -109,6 +108,7 @@ class Additional(Prioritization):
                 temp_statements.append(test)
 
         while len(temp_statements) > 0:
+            print "Length of temp_statements: ", len(temp_statements)
             temp_statements = sorted(temp_statements, key=lambda x: x['covered_count'], reverse=True)
             for x in range(0, len(temp_statements)):
                 if Prioritization.same_coverage(temp_statements[x]['not'],

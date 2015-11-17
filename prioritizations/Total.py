@@ -1,5 +1,6 @@
 from .Prioritization import Prioritization
 from benchmarks.Benchmark import Benchmark
+import subprocess
 
 """
 T4: Total branch coverage prioritization. By instrumenting
@@ -38,7 +39,6 @@ class Total(Prioritization, object):
 
     __universe = "universe.txt"
     __gcc_out = "out"
-    __gcov_out = "gcov_out"
     __gcov = "gcov -abcn"
 
     """
@@ -54,6 +54,7 @@ class Total(Prioritization, object):
         # input so we can re-run gcov
         self.name = name
         self.path = path
+        self.tag = "[Total]\t"
 
         self.results = {'statements': [], 'branches': []}
 
@@ -75,7 +76,7 @@ class Total(Prioritization, object):
             for line in f:
                 # run the test set given our newly compiled file
                 command = "{0}./{1} {2}".format(self.path, Total.__gcc_out, line)
-                Benchmark.run_command(command)
+                Benchmark.run_command(command, stdin=subprocess.PIPE, shell=True)
 
                 # Create the .gcov file from the gcno and gcda data
                 command = "{0} {1}{2}.c".format(Total.__gcov, self.path, self.name)
@@ -92,6 +93,8 @@ class Total(Prioritization, object):
                 if current_branch_coverage > branch_coverage:
                     branch_coverage = current_branch_coverage
                     self.results["branches"].append(x)
+        print "{0} Statement Coverage: {1}".format(self.tag, line_coverage)
+        print "{0} Branch Coverage: {1}".format(self.tag, branch_coverage)
         pass
 
     """

@@ -1,6 +1,6 @@
 import os
 import subprocess
-import random
+import time
 
 
 class Benchmark(object):
@@ -82,6 +82,8 @@ class Benchmark(object):
         # run the tests on our non-mutated program
         if self.run:
             self.run_tests()
+            print "{0}size of results: {1}".format(self.tag, len(self.results))
+            print "======================="
         else:
             print "{0} unable to run {1}, currently disabled by self.run".format(self.tag, self.name)
 
@@ -92,31 +94,25 @@ class Benchmark(object):
         x = 0
         print "{0}Beginning to run tests for {1}".format(self.tag, self.name)
         os.chdir(self.path)
-        print os.getcwd()
         with open(self.path + Benchmark.__universe) as f:
             for line in f:
                 self.tests.append(line)
                 # run the test set given our newly compiled file
                 command = "./{0} {1}".format(Benchmark.__gcc_out, line)
-                out = Benchmark.run_command(command, stdin=subprocess.PIPE, shell=True)
+                out = Benchmark.run_command(command)
                 output = out[0].strip()
 
                 # Create the .gcov file from the gcno and gcda data
                 command = "{0} {1}.c".format(Benchmark.__gcov, self.name)
-                out = Benchmark.run_command(command)
+                Benchmark.run_command(command)
 
                 # parse the gcov results
                 self.parse_gcov("{0}.c.gcov".format(self.name), x, output)
 
-                command = "rm {0}.gcno {1}.gcda".format(self.name, self.name)
+                command = "rm -f {0}.c.gcov {0}.gcda".format(self.name)
                 Benchmark.run_command(command)
+
                 x += 1
-                if x > 9:
-                    break
-                else:
-                    continue
-        print "{0}size of results: {1}".format(self.tag, len(self.results))
-        print "======================="
 
     """
     Parse the gcov output for the branch information
@@ -165,6 +161,7 @@ class Benchmark(object):
                     else:
                         branches_not_covered.append(line_number)
                     still_branch = True
+
         self.results[test_number] = {'statements': {'coverage': statements,
                                                     'covered': statements_covered, 'not': statements_not_covered,
                                                     'id': test_number, 'covered_count': len(statements_covered),
@@ -194,7 +191,7 @@ class Benchmark(object):
 
                 # run the test set given our newly compiled file
                 command = "./{0} {1}".format(Benchmark.__gcc_out, r)
-                Benchmark.run_command(command)
+                Benchmark.run_command(command, stdin=subprocess.PIPE, shell=True)
 
                 # Create the .gcov file from the gcno and gcda data
                 command = "{0} {1}.c".format(Benchmark.__gcov, self.name)
@@ -209,7 +206,7 @@ class Benchmark(object):
             for t in total:
                 # run the test set given our newly compiled file
                 command = "./{0} {1}".format(Benchmark.__gcc_out, t)
-                Benchmark.run_command(command)
+                Benchmark.run_command(command, stdin=subprocess.PIPE, shell=True)
 
                 # Create the .gcov file from the gcno and gcda data
                 command = "{0} {1}.c".format(Benchmark.__gcov, self.name)
@@ -224,7 +221,7 @@ class Benchmark(object):
             for a in additional:
                 # run the test set given our newly compiled file
                 command = "./{0} {1}".format(Benchmark.__gcc_out, t)
-                Benchmark.run_command(command)
+                Benchmark.run_command(command, stdin=subprocess.PIPE, shell=True)
 
                 # Create the .gcov file from the gcno and gcda data
                 command = "{0} {1}.c".format(Benchmark.__gcov, self.name)
@@ -251,9 +248,9 @@ class Benchmark(object):
     wrapper to run a command and capture the output
     """
     @staticmethod
-    def run_command(command, stdin=None, shell=False):
-        print(command)
-        p = subprocess.Popen(command.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+    def run_command(command, stdin=None, shell=True):
+        #print command
+        p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                              stdin=stdin, shell=shell)
         out, err = p.communicate()
         return out, err
