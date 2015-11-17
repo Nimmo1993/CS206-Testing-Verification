@@ -44,7 +44,7 @@ class Benchmark(object):
     """
     __gcc_out = "out"
     __universe = "universe.txt"
-    __gcc = "gcc --coverage -fprofile-arcs -ftest-coverage -fPIC -o"
+    __gcc = "gcc -ansi -Wno-implicit-int -Wno-return-type --coverage -fprofile-arcs -ftest-coverage -o"
     __gcov_out = "gcov_out"
     __gcov_obj_file = "--object-file executable"
     __gcov = "gcov -bc"
@@ -61,10 +61,14 @@ class Benchmark(object):
         self.tag = "[Benchmark]\t"
         self.tests = []
         self.mutant_results = {}
+        self.run = False if self.name == "replace" else True
+
+        os.chdir(self.path)
+        print os.getcwd()
 
         # Compile the file with the necessary gcov flags
-        Benchmark.run_command("{0} {1}{2} {3}{4}.c"
-                              .format(Benchmark.__gcc, self.path, Benchmark.__gcc_out, self.path, self.name))
+        command = "{0} {1} {2}.c".format(Benchmark.__gcc, Benchmark.__gcc_out, self.name)
+        out = Benchmark.run_command(command)
 
         # get all the mutations present in the directory
         for subdirs, dirs, files in os.walk(self.path):
@@ -76,7 +80,10 @@ class Benchmark(object):
         # this is where we will store the results for our tests
         self.results = {}
         # run the tests on our non-mutated program
-        self.run_tests()
+        if self.run:
+            self.run_tests()
+        else:
+            print "{0} unable to run {1}, currently disabled by self.run".format(self.tag, self.name)
 
     """
     Run the tests available to the program
@@ -85,12 +92,13 @@ class Benchmark(object):
         x = 0
         print "{0}Beginning to run tests for {1}".format(self.tag, self.name)
         os.chdir(self.path)
+        print os.getcwd()
         with open(self.path + Benchmark.__universe) as f:
             for line in f:
                 self.tests.append(line)
                 # run the test set given our newly compiled file
                 command = "./{0} {1}".format(Benchmark.__gcc_out, line)
-                out = Benchmark.run_command(command)
+                out = Benchmark.run_command(command, stdin=subprocess.PIPE, shell=True)
                 output = out[0].strip()
 
                 # Create the .gcov file from the gcno and gcda data
@@ -108,6 +116,7 @@ class Benchmark(object):
                 else:
                     continue
         print "{0}size of results: {1}".format(self.tag, len(self.results))
+        print "======================="
 
     """
     Parse the gcov output for the branch information
@@ -140,7 +149,7 @@ class Benchmark(object):
                         branch = []
                         still_branch = False
                     # Get the line number and add it to the statements
-                    line_number = int(split[1].strip(":}"))
+                    line_number = int(split[1].split(':')[0])
                     statements[line_number] = True if split[0].strip(":") != "#####" else False
                     if statements[line_number] is True:
                         statements_covered.append(line_number)
@@ -242,9 +251,10 @@ class Benchmark(object):
     wrapper to run a command and capture the output
     """
     @staticmethod
-    def run_command(command):
+    def run_command(command, stdin=None, shell=False):
         print(command)
-        p = subprocess.Popen(command.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        p = subprocess.Popen(command.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                             stdin=stdin, shell=shell)
         out, err = p.communicate()
         return out, err
 

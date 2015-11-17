@@ -122,12 +122,15 @@ class Additional(Prioritization):
         Run for branches
         """
         for test in self.branch_coverage_tests:
+            # always compare against the last element added, because that covers the next least
             if not Prioritization.same_coverage(test['not'], self.results['branches'][-1]['not']):
                 temp_branches.append(test)
 
         while len(temp_branches) > 0:
+            # we must sort the list at each iteration according to the algorithm
             temp_branches = sorted(temp_branches, key=lambda x: x['covered_count'], reverse=True)
             for x in range(0, len(temp_branches)):
+                # compare against the last element added to results for differences
                 if Prioritization.same_coverage(temp_branches[x]['not'], self.branch_coverage_tests[-1]['not']) is True:
                     del temp_branches[x]
                 else:
