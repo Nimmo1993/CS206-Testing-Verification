@@ -60,6 +60,7 @@ class Benchmark(object):
         self.mutations = []
         self.tag = "[Benchmark]\t"
         self.tests = []
+        self.mutant_results = {}
 
         # Compile the file with the necessary gcov flags
         Benchmark.run_command("{0} {1}{2} {3}{4}.c"
@@ -163,6 +164,61 @@ class Benchmark(object):
                                                   'covered': branches_covered, 'not': branches_not_covered,
                                                   'id': test_number, 'covered_count': len(branches_covered),
                                                   'not_count': len(branches_not_covered)}}
+
+    """
+    Run the different test cases on the mutant programs
+    """
+    def run_mutation_tests(self, rand, total, additional):
+        for mutation in self.mutations:
+            os.chdir(mutation)
+            # Compile the file with the necessary gcov flags
+            command = "{0} {1} {2}.c".format(Benchmark.__gcc, Benchmark.__gcc_out, self.name)
+            Benchmark.run_command(command)
+
+            """
+            Run the mutants against the test sets I've discovered
+            """
+            for r in rand:
+
+                # run the test set given our newly compiled file
+                command = "./{0} {1}".format(Benchmark.__gcc_out, r)
+                Benchmark.run_command(command)
+
+                # Create the .gcov file from the gcno and gcda data
+                command = "{0} {1}.c".format(Benchmark.__gcov, self.name)
+                Benchmark.run_command(command)
+
+                # parse the gcov results some how...
+
+                self.mutant_results['random'].append("")
+                pass
+            for t in total:
+                # run the test set given our newly compiled file
+                command = "./{0} {1}".format(Benchmark.__gcc_out, t)
+                Benchmark.run_command(command)
+
+                # Create the .gcov file from the gcno and gcda data
+                command = "{0} {1}.c".format(Benchmark.__gcov, self.name)
+                Benchmark.run_command(command)
+
+                # parse the gcov results some how...
+
+                self.mutant_results['total'].append("")
+                pass
+            for a in additional:
+                # run the test set given our newly compiled file
+                command = "./{0} {1}".format(Benchmark.__gcc_out, t)
+                Benchmark.run_command(command)
+
+                # Create the .gcov file from the gcno and gcda data
+                command = "{0} {1}.c".format(Benchmark.__gcov, self.name)
+                Benchmark.run_command(command)
+
+                # parse the gcov results some how...
+                self.mutant_results['additional'].append("")
+                pass
+
+        pass
     """
     Retrieve each mutation from the program folder
     This will return a path for all mutations needed

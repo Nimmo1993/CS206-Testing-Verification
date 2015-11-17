@@ -14,11 +14,14 @@ def main():
             break
     # print or run all benchmarks from here
     for (x, benchmark) in enumerate(benchmarks):
-        random = Random(benchmark.results)
-        total = Total(benchmark.results, benchmark.path, benchmark.name)
-        print total.results
-        #print branch.results
         # random = Random(benchmark.results)
+        # print random.results
+        # total = Total(benchmark.results, benchmark.path, benchmark.name)
+        # print total.results
+        # additional = Additional(benchmark.results)
+
+        # benchmark.run_mutation_tests(random, total, additional)
+        benchmark.run_mutation_tests(None, None, None)
         break
         ###
         # print benchmark
