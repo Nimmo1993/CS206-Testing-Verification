@@ -89,17 +89,17 @@ class Benchmark(object):
             for line in f:
                 self.tests.append(line)
                 # run the test set given our newly compiled file
-                command = "{0}./{1} {2}".format(self.path, Benchmark.__gcc_out, line)
+                command = "./{0} {1}".format(Benchmark.__gcc_out, line)
                 Benchmark.run_command(command)
 
                 # Create the .gcov file from the gcno and gcda data
-                command = "{0} {1}{2}.c".format(Benchmark.__gcov, self.path, self.name)
+                command = "{0} {1}.c".format(Benchmark.__gcov, self.name)
                 Benchmark.run_command(command)
 
                 # parse the gcov results
-                self.parse_gcov("{0}{1}.c.gcov".format(self.path, self.name), x)
+                self.parse_gcov("{0}.c.gcov".format(self.name), x)
 
-                command = "rm {0}{1}.gcno {2}{3}.gcda".format(self.path, self.name, self.path, self.name)
+                command = "rm {0}.gcno {1}.gcda".format(self.name, self.name)
                 Benchmark.run_command(command)
                 x += 1
                 if x > 9:
@@ -178,6 +178,7 @@ class Benchmark(object):
             """
             Run the mutants against the test sets I've discovered
             """
+            x = 0
             for r in rand:
 
                 # run the test set given our newly compiled file
@@ -191,7 +192,9 @@ class Benchmark(object):
                 # parse the gcov results some how...
 
                 self.mutant_results['random'].append("")
+                x += 1
                 pass
+            x = 0
             for t in total:
                 # run the test set given our newly compiled file
                 command = "./{0} {1}".format(Benchmark.__gcc_out, t)
@@ -204,7 +207,9 @@ class Benchmark(object):
                 # parse the gcov results some how...
 
                 self.mutant_results['total'].append("")
+                x += 1
                 pass
+            x = 0
             for a in additional:
                 # run the test set given our newly compiled file
                 command = "./{0} {1}".format(Benchmark.__gcc_out, t)
@@ -216,6 +221,7 @@ class Benchmark(object):
 
                 # parse the gcov results some how...
                 self.mutant_results['additional'].append("")
+                x += 1
                 pass
 
         pass

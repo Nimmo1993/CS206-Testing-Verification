@@ -11,7 +11,7 @@ def main():
     with open(sys.argv[1]) as f:
         for line in f:
             benchmarks.append(Benchmark(sys.argv[2], line))
-            break
+            # break
     # print or run all benchmarks from here
     for (x, benchmark) in enumerate(benchmarks):
         # random = Random(benchmark.results)
