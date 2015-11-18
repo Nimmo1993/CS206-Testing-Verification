@@ -58,74 +58,22 @@ class Total(Prioritization, object):
 
         self.results = {'statements': [], 'branches': []}
 
-        # self.statement_coverage_tests = sorted(self.statement_coverage_tests,
-                                               # key=lambda x: x['covered_count'], reverse=True)
-        # self.branch_coverage_tests = sorted(self.branch_coverage_tests, key=lambda x: x['covered_count'], reverse=True)
+        self.statement_coverage_tests = sorted(self.statement_coverage_tests,
+                                               key=lambda x: x['covered_count'], reverse=True)
+        self.branch_coverage_tests = sorted(self.branch_coverage_tests, key=lambda x: x['covered_count'], reverse=True)
 
-        # self.build_statement_coverage_set()
-        # self.build_branch_coverage_set()
+        self.build_branch_coverage_set_two()
+        self.build_statement_coverage_set_two()
 
-        self.build_coverage()
+        # self.build_coverage()
         pass
 
-    def build_coverage(self):
-        x = 0
-        line_coverage = float(0)
-        branch_coverage = float(0)
-        with open(self.path + Total.__universe) as f:
-            for line in f:
-                # run the test set given our newly compiled file
-                command = "{0}./{1} {2}".format(self.path, Total.__gcc_out, line)
-                Benchmark.run_command(command, stdin=subprocess.PIPE, shell=True)
+    def build_statement_coverage_set_two(self):
+        for value in self.statement_coverage_tests:
+            if self.mutate_statement_test(value['coverage']):
+                self.results['statements'].append(value)
 
-                # Create the .gcov file from the gcno and gcda data
-                command = "{0} {1}{2}.c".format(Total.__gcov, self.path, self.name)
-                from_command = Benchmark.run_command(command)
-                res = from_command[0].strip().split()
-                # parse the branch and the line coverage
-                current_line_coverage = float(res[3].split(':')[1].split('%')[0])
-                current_branch_coverage = float(res[7].split(':')[1].split('%')[0])
-
-                # decide whether or not to add to the coverages
-                if current_line_coverage > line_coverage:
-                    line_coverage = current_line_coverage
-                    self.results["statements"].append(x)
-                if current_branch_coverage > branch_coverage:
-                    branch_coverage = current_branch_coverage
-                    self.results["branches"].append(x)
-        print "{0} Statement Coverage: {1}".format(self.tag, line_coverage)
-        print "{0} Branch Coverage: {1}".format(self.tag, branch_coverage)
-        pass
-
-    """
-    percent is monotonic.  Thus, we only add to our results when our coverage is
-    greater than the percent.  If it's not we can safely ignore it!
-    """
-    def build_statement_coverage_set(self):
-        percent = 0.0
-        for index in self.statement_coverage_tests:
-            index_total_coverage = float(index.get('covered_count') + float(index.get('not_count')))
-            index_coverage = float(index.get('covered_count'))
-
-            coverage = float(index_coverage / index_total_coverage)
-
-            # force this to be monotonic!
-            if coverage > percent and percent < float(100):
-                percent = coverage
-                self.results['statements'].append(index)
-    """
-    This is the same as build_statement_coverage_set,
-    but separate for ease of use and flexibility
-    """
-    def build_branch_coverage_set(self):
-        percent = 0.0
-        for index in self.branch_coverage_tests:
-            index_total_coverage = float(index.get('covered_count') + float(index.get('not_count')))
-            index_coverage = float(index.get('covered_count'))
-
-            coverage = float(index_coverage / index_total_coverage)
-
-            # force this to be monotonic!
-            if coverage > percent and percent < float(100):
-                percent = coverage
-                self.results['branches'].append(index)
+    def build_branch_coverage_set_two(self):
+        for x in self.branch_coverage_tests:
+            if self.mutate_branch_test(x['coverage']):
+                self.results['branches'].append(x)

@@ -10,6 +10,17 @@ class Prioritization(object):
         self.statement_coverage_tests = []
         self.branch_coverage_tests = []
 
+        self.branch_test_cases = {}
+        self.statement_test_cases = {}
+
+        for x in self.tests[0]['branches']['coverage']:
+            self.branch_test_cases[int(x)] = []
+            for index in self.tests[0]['branches']['coverage'].get(x):
+                self.branch_test_cases[int(x)].append(False)
+
+        for x in self.tests[0]['statements']['coverage']:
+            self.statement_test_cases[int(x)] = False
+
         for key in self.tests:
             self.statement_coverage_tests.append(self.tests[key].get('statements'))
             self.branch_coverage_tests.append(self.tests[key].get('branches'))
@@ -17,8 +28,25 @@ class Prioritization(object):
         self.results = {'branches': [], 'statements': []}
         pass
 
+    def mutate_statement_test(self, statements):
+        mutated = False
+        for x in self.statement_test_cases:
+            if self.statement_test_cases[x] == False and statements[x] == True:
+                self.statement_test_cases[x] = True
+                mutated = True
+        return mutated
+
+    def mutate_branch_test(self, branches):
+        mutated = False
+        for x in self.branch_test_cases:
+            for y, value in enumerate(self.branch_test_cases[x]):
+                if self.branch_test_cases[x][y] == False and branches[x][y] == True:
+                    self.branch_test_cases[x][y] = True
+                    mutated = True
+        return mutated
+
     """
-    Checks for similarness of test cases
+    Checks for similarity of test cases
     """
     @staticmethod
     def same_coverage(s1, s2):

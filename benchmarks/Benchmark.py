@@ -87,6 +87,7 @@ class Benchmark(object):
         else:
             print "{0} unable to run {1}, currently disabled by self.run".format(self.tag, self.name)
 
+        #print self.results
     """
     Run the tests available to the program
     """
@@ -114,9 +115,10 @@ class Benchmark(object):
 
                 x += 1
 
-                if x > 10:
-                    print "{0}quiting at {1}".format(self.tag, x)
-                    break
+                if x >= 10:
+                    pass
+                    #print "{0}quiting at {1}".format(self.tag, x)
+                    #break
 
     """
     Parse the gcov output for the branch information
@@ -159,20 +161,23 @@ class Benchmark(object):
                     if split[3] == "executed" and split[2] == "never":
                         branch.append(False)
                     else:
-                        branch.append(True if int(split[3]) > 0 else False)
+                        branch.append(True if int(split[3]) >= 1 else False)
+                    # add the line numbers to the covered/not arrays
                     if branch[len(branch) - 1] is True:
                         branches_covered.append(line_number)
                     else:
                         branches_not_covered.append(line_number)
                     still_branch = True
 
+        # print "Test: {0} has statement coverage of: {1}".format(test_number, float(len(statements_covered)/(float(len(statements_not_covered)) + float(len(statements_covered)))))
+        # print "Test: {0} has branch coverage of: {1}".format(test_number, float(len(branches_covered)/(float(len(branches_not_covered)) + float(len(branches_covered)))))
         self.results[test_number] = {'statements': {'coverage': statements,
-                                                    'covered': statements_covered, 'not': statements_not_covered,
+                                                    'covered': set(statements_covered), 'not': set(statements_not_covered),
                                                     'id': test_number, 'covered_count': len(statements_covered),
                                                     'not_count': len(statements_not_covered),
                                                     'output': output},
                                      'branches': {'coverage': branches,
-                                                  'covered': branches_covered, 'not': branches_not_covered,
+                                                  'covered': set(branches_covered), 'not': set(branches_not_covered),
                                                   'id': test_number, 'covered_count': len(branches_covered),
                                                   'not_count': len(branches_not_covered),
                                                   'output': output}}

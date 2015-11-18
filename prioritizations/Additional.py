@@ -57,6 +57,11 @@ coverage information instead of statement coverage information[11][12]
 
 Sort the cases by coverage, pull one, resort based on additional coverage left
 take the not covered top one, intersect with all other sets, then resort remainder, pull form top, repeat
+
+add test, then sort the list based on what you haven't seen, add again, then resort the list
+
+So for additional you sort by total coverage first, then for every other test you sort by relative coverage from the last added coverage?
+Coverage being literal true/false values for each statement/branch.
 """
 
 

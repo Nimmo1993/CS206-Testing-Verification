@@ -10,17 +10,6 @@ class Random(Prioritization):
     def __init__(self, tests):
         Prioritization.__init__(self, tests)
         self.coverage = 0
-        self.branch_test_cases = {}
-        self.statement_test_cases = {}
-
-        for x in self.tests[0]['branches']['coverage']:
-            self.branch_test_cases[int(x)] = []
-            for index in self.tests[0]['branches']['coverage'].get(x):
-                self.branch_test_cases[int(x)].append(False)
-
-        for x in self.tests[0]['statements']['coverage']:
-            self.statement_test_cases[int(x)] = []
-            self.statement_test_cases[int(x)].append(False)
 
         # randomly shuffle the test cases
         random.shuffle(self.branch_coverage_tests)
