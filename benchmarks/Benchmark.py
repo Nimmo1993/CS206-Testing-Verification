@@ -116,9 +116,9 @@ class Benchmark(object):
                 x += 1
 
                 if x >= 10:
-                    pass
-                    #print "{0}quiting at {1}".format(self.tag, x)
-                    #break
+                    #pass
+                    print "{0}quiting at {1}".format(self.tag, x)
+                    break
 
     """
     Parse the gcov output for the branch information
@@ -172,12 +172,14 @@ class Benchmark(object):
         # print "Test: {0} has statement coverage of: {1}".format(test_number, float(len(statements_covered)/(float(len(statements_not_covered)) + float(len(statements_covered)))))
         # print "Test: {0} has branch coverage of: {1}".format(test_number, float(len(branches_covered)/(float(len(branches_not_covered)) + float(len(branches_covered)))))
         self.results[test_number] = {'statements': {'coverage': statements,
-                                                    'covered': set(statements_covered), 'not': set(statements_not_covered),
+                                                    'covered': set(statements_covered),
+                                                    'not': set(statements_not_covered),
                                                     'id': test_number, 'covered_count': len(statements_covered),
                                                     'not_count': len(statements_not_covered),
                                                     'output': output},
                                      'branches': {'coverage': branches,
-                                                  'covered': set(branches_covered), 'not': set(branches_not_covered),
+                                                  'covered': set(branches_covered),
+                                                  'not': set(branches_not_covered),
                                                   'id': test_number, 'covered_count': len(branches_covered),
                                                   'not_count': len(branches_not_covered),
                                                   'output': output}}

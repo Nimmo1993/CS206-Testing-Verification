@@ -33,7 +33,7 @@ def main():
         print "{0}Random: branches: {1}\t statements: {2}".format(tag, len(random.results['branches']),
                                                                len(random.results['statements']))
         """
-        #"""
+        """
         total = Total(benchmark.results, benchmark.path, benchmark.name)
         print "{0}Total: branches: {1}\t statements: {2}".format(tag, len(total.results['branches']),
                                                                  len(total.results['statements']))
@@ -45,12 +45,12 @@ def main():
         for s in total.results['statements']:
             print s
             pass
-        #"""
         """
+        #"""
         additional = Additional(benchmark.results)
         print "{0}Additional: branches: {1}\t statements: {2}".format(tag, len(additional.results['branches']),
                                                                       len(additional.results['statements']))
-        """
+        #"""
         # benchmark.run_mutation_tests(random, total, additional)
         # benchmark.run_mutation_tests(None, None, None)
         break

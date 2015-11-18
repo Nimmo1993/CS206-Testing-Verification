@@ -55,13 +55,13 @@ same as addtl-st, except that it uses function and branch
 coverage information instead of statement coverage information[11][12]
 [13].
 
-Sort the cases by coverage, pull one, resort based on additional coverage left
-take the not covered top one, intersect with all other sets, then resort remainder, pull form top, repeat
-
-add test, then sort the list based on what you haven't seen, add again, then resort the list
-
-So for additional you sort by total coverage first, then for every other test you sort by relative coverage from the last added coverage?
-Coverage being literal true/false values for each statement/branch.
+1) Sort the test cases by coverage_count
+2) add the top element to the results
+3) remove the element from the list
+4) resort the test cases relative to the coverage of the first one
+    -we want to resort based on previous coverage. So the
+        test cases that have the most coverage of what is remaining
+5) repeat 2-4 until as close to 100% as possible
 """
 
 
@@ -81,9 +81,11 @@ class Additional(Prioritization):
             self.branch_coverage_tests.append(self.tests[test].get('branches'))
 
         # sort the branch and statement by their coverage count
-        self.statement_coverage_tests = sorted(self.statement_coverage_tests,
+        tempa = sorted(self.statement_coverage_tests,
                                                key=lambda x: x['covered_count'], reverse=True)
-        self.branch_coverage_tests = sorted(self.branch_coverage_tests, key=lambda x: x['covered_count'], reverse=True)
+        tempb = sorted(self.branch_coverage_tests, key=lambda x: x['covered_count'], reverse=True)
+
+        print tempa
 
         # We automatically take the first element as it maintains the highest coverage
         self.results['statements'].append(self.statement_coverage_tests[0])
@@ -92,7 +94,12 @@ class Additional(Prioritization):
         del self.statement_coverage_tests[0]
         del self.branch_coverage_tests[0]
 
-        self.build_coverage()
+        tempc = sorted(tempa, cmp=self.compare_statements)
+        tempd = sorted(tempb, cmp=self.compare_branches)
+
+        print tempc
+
+        #self.build_coverage()
         pass
 
     """
@@ -150,3 +157,23 @@ class Additional(Prioritization):
                     temp_branches.append(temp_branches[x])
             count += 1
             pass
+
+    def compare_statements(self, a, b):
+        if len(a['covered'] - self.results['statements'][-1]['covered']) > \
+                len(b['covered'] - self.results['statements'][-1]['covered']):
+            return 1
+        elif len(a['covered'] - self.results['statements'][-1]['covered']) > \
+                len(b['covered'] - self.results['statements'][-1]['covered']):
+            return -1
+        else:
+            return 0
+
+    def compare_branches(self, a, b):
+        if len(a['covered'] - self.results['branches'][-1]['covered']) > \
+                len(b['covered'] - self.results['branches'][-1]['covered']):
+            return 1
+        elif len(a['covered'] - self.results['branches'][-1]['covered']) > \
+                len(b['covered'] - self.results['branches'][-1]['covered']):
+            return -1
+        else:
+            return 0
