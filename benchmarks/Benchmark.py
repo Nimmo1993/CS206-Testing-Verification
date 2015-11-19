@@ -5,7 +5,6 @@ from prioritizations import *
 
 
 class Benchmark(object):
-
     """
     Defines the benchmark for each input that is required.  These benchmarks have 3 TestCases
     which will help us prioritize the test cases in order to achieve maximum coverage with
@@ -61,7 +60,7 @@ class Benchmark(object):
         self.mutations = []
         self.tag = "[Benchmark]\t"
         self.tests = []
-        self.mutant_results = {'random': [], 'total': [], 'additional': []}
+        self.mutant_results = {'random': {}, 'total': {}, 'additional': {}}
         self.run = False if self.name == "replace" else True
         if limit == -1:
             self.limit = float("inf")
@@ -87,15 +86,17 @@ class Benchmark(object):
         if self.run:
             self.run_tests()
             print "{0}size of results: {1}".format(self.tag, len(self.results))
-            #print "{0}{1}".format(self.tag, self.results)
+            # print "{0}{1}".format(self.tag, self.results)
             print "{0}=======================".format(self.tag)
         else:
             print "{0} unable to run {1}, currently disabled by self.run".format(self.tag, self.name)
 
-        #print self.results
+            # print self.results
+
     """
     Run the tests available to the program
     """
+
     def run_tests(self):
         test_case = 1
         iteration = 0
@@ -129,6 +130,7 @@ class Benchmark(object):
     """
     Parse the gcov output for the branch information
     """
+
     def parse_gcov(self, path, test_number, output):
         line_number = 0
         # lets us know whether we are parsing branches or lines
@@ -185,19 +187,19 @@ class Benchmark(object):
                         branches_taken += 1
                     still_branch = True
 
-        # add the element to the results
-            res[test_number-1] = {'statements': {'coverage': statements,
-                                                    'covered': set(statements_covered),
-                                                    'not': set(statements_not_covered),
-                                                    'id': test_number, 'covered_count': len(statements_covered),
-                                                    'not_count': len(statements_not_covered),
-                                                    'output': output},
-                                     'branches': {'coverage': branches,
-                                                  'covered': covered_branches,
-                                                  'not': not_covered_branches,
-                                                  'id': test_number, 'covered_count': branches_taken,
-                                                  'not_count': branches_not_taken,
-                                                  'output': output}}
+                    # add the element to the results
+            res[test_number - 1] = {'statements': {'coverage': statements,
+                                                   'covered': set(statements_covered),
+                                                   'not': set(statements_not_covered),
+                                                   'id': test_number, 'covered_count': len(statements_covered),
+                                                   'not_count': len(statements_not_covered),
+                                                   'output': output},
+                                    'branches': {'coverage': branches,
+                                                 'covered': covered_branches,
+                                                 'not': not_covered_branches,
+                                                 'id': test_number, 'covered_count': branches_taken,
+                                                 'not_count': branches_not_taken,
+                                                 'output': output}}
         return res
 
     """
@@ -207,14 +209,20 @@ class Benchmark(object):
     2) re-run each test against the mutant
     3) save the results for analysis
     """
-    def run_mutation_tests(self, rand, total, additional):
 
+    def run_mutation_tests(self, rand, total, additional):
+        x = 0
         for mutation in self.mutations:
             print self.tag, "Running: ", mutation
             os.chdir(mutation)
             # Compile the file with the necessary gcov flags
             command = "{0} {1} {2}.c".format(Benchmark.__gcc, Benchmark.__gcc_out, self.name)
             Benchmark.run_command(command)
+            name = mutation.split('/')[-1]
+
+            self.mutant_results['total'][name] = {}
+            self.mutant_results['random'][name] = {}
+            self.mutant_results['additional'][name] = {}
 
             """
             Run the mutants against the test sets I've discovered
@@ -227,8 +235,9 @@ class Benchmark(object):
                     # Create the .gcov file from the gcno and gcda data
                     command = "{0} {1}.c".format(Benchmark.__gcov, self.name)
                     Benchmark.run_command(command)
-                    self.mutant_results['random'] = self.parse_gcov("{0}.c.gcov"
-                                                                    .format(self.name), record['id'], out[0].strip())
+                    self.mutant_results['random'][name][record['id']] = self.parse_gcov("{0}.c.gcov"
+                                                                            .format(self.name), record['id'],
+                                                                          out[0].strip())
                     # reset the gcov data
                     command = "rm -f {0}.c.gcov {0}.gcda".format(self.name)
                     Benchmark.run_command(command)
@@ -243,7 +252,7 @@ class Benchmark(object):
                     # Create the .gcov file from the gcno and gcda data
                     command = "{0} {1}.c".format(Benchmark.__gcov, self.name)
                     Benchmark.run_command(command)
-                    self.mutant_results['total'] = self.parse_gcov("{0}.c.gcov"
+                    self.mutant_results['total'][name][record['id']] = self.parse_gcov("{0}.c.gcov"
                                                                    .format(self.name), record['id'], out[0].strip())
 
                     # reset the gcov data
@@ -259,18 +268,25 @@ class Benchmark(object):
                     # Create the .gcov file from the gcno and gcda data
                     command = "{0} {1}.c".format(Benchmark.__gcov, self.name)
                     Benchmark.run_command(command)
-                    self.mutant_results['additional'] = self.parse_gcov("{0}.c.gcov"
-                                                                        .format(self.name), record['id'], out[0].strip())
+                    self.mutant_results['additional'][name][record['id']] = self.parse_gcov("{0}.c.gcov"
+                                                                        .format(self.name), record['id'],
+                                                                        out[0].strip())
                     # reset the gcov data
                     command = "rm -f {0}.c.gcov {0}.gcda".format(self.name)
                     Benchmark.run_command(command)
                     pass
+            x += 1
+            if x >= self.limit:
+                print "{0}quiting at {1}".format(self.tag, x)
+                break
         pass
+
     """
     Retrieve each mutation from the program folder
     This will return a path for all mutations needed
     testing
     """
+
     def get_mutations_as_string(self):
         string = ""
         for x in self.mutations:
@@ -280,9 +296,10 @@ class Benchmark(object):
     """
     wrapper to run a command and capture the output
     """
+
     @staticmethod
     def run_command(command, stdin=None, shell=True):
-        #print command
+        # print command
         p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                              stdin=stdin, shell=shell)
         out, err = p.communicate()

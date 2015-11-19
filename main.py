@@ -1,4 +1,5 @@
-from benchmarks.Benchmark import Benchmark
+from benchmarks.Benchmark import *
+from benchmarks.Difference import *
 from prioritizations.Total import Total
 from prioritizations.Random import Random
 from prioritizations.Additional import Additional
@@ -65,7 +66,8 @@ def main():
                 pass
 
         benchmark.run_mutation_tests(random, total, additional)
-        print benchmark.mutant_results
+        diff = Difference(mutant=benchmark.mutant_results, rand=random.results,
+                          total=total.results, add=additional.results)
         # benchmark.run_mutation_tests(None, None, None)
         break
         ###
