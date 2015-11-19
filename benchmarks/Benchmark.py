@@ -49,7 +49,7 @@ class Benchmark(object):
     __gcov_obj_file = "--object-file executable"
     __gcov = "gcov -bc"
 
-    def __init__(self, path, line):
+    def __init__(self, path, line, limit):
         b = line.split('~')
         self.name = b[0]
         self.compile = b[1]
@@ -62,6 +62,10 @@ class Benchmark(object):
         self.tests = []
         self.mutant_results = {}
         self.run = False if self.name == "replace" else True
+        if limit == -1:
+            self.limit = float("inf")
+        else:
+            self.limit = limit
 
         os.chdir(self.path)
 
@@ -115,8 +119,7 @@ class Benchmark(object):
 
                 test_case += 1
 
-                if test_case >= 10:
-                    continue
+                if test_case >= self.limit:
                     print "{0}quiting at {1}".format(self.tag, test_case)
                     break
 
