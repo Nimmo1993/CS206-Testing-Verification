@@ -6,10 +6,11 @@ import sys
 
 tag = "[main]\t"
 
-run_random = True
-run_total = True
-run_additional = True
-run_limit = 5
+run_random = {'run': True, 'display': False}
+run_total = {'run': True, 'display': False}
+run_additional = {'run': True, 'display': False}
+run_limit = 3
+
 
 def main():
     benchmarks = []
@@ -20,8 +21,14 @@ def main():
             break
     # print or run all benchmarks from here
     for (x, benchmark) in enumerate(benchmarks):
-        if run_random:
+        if run_random['run']:
             random = Random(benchmark.results)
+        if run_total['run']:
+            total = Total(benchmark.results)
+        if run_additional['run']:
+            additional = Additional(benchmark.results)
+
+        if run_random['run'] and run_random['display']:
             print tag, "=================="
             print "{0}Random: branches: {1}\t statements: {2}".format(tag, len(random.results['branches']),
                                                                    len(random.results['statements']))
@@ -33,8 +40,7 @@ def main():
             for s in random.results['statements']:
                 print tag, s
                 pass
-        if run_total:
-            total = Total(benchmark.results)
+        if run_total['run'] and run_total['display']:
             print tag, "=================="
             print tag, "{0}Total: branches: {1}\t statements: {2}".format(tag, len(total.results['branches']),
                                                                      len(total.results['statements']))
@@ -46,8 +52,7 @@ def main():
             for s in total.results['statements']:
                 print tag, s
                 pass
-        if run_additional:
-            additional = Additional(benchmark.results)
+        if run_additional['run'] and run_additional['display']:
             print tag, "=================="
             print "{0}Additional: branches: {1}\t statements: {2}".format(tag, len(additional.results['branches']),
                                                                           len(additional.results['statements']))
@@ -58,7 +63,9 @@ def main():
             for s in additional.results['statements']:
                 print s
                 pass
-        # benchmark.run_mutation_tests(random, total, additional)
+
+        benchmark.run_mutation_tests(random, total, additional)
+        print benchmark.mutant_results
         # benchmark.run_mutation_tests(None, None, None)
         break
         ###

@@ -40,8 +40,11 @@ class Additional(Prioritization):
         del self.statement_coverage_tests[0]
         del self.branch_coverage_tests[0]
 
-        self.build_branch_coverage_set()
-        self.build_statement_coverage_set()
+        if len(self.branch_coverage_tests) > 0:
+            self.build_branch_coverage_set()
+        if len(self.statement_coverage_tests) > 0:
+            self.build_statement_coverage_set()
+
         pass
 
     def build_branch_coverage_set(self):
@@ -56,13 +59,13 @@ class Additional(Prioritization):
             else:
                 working = False
 
-            if len(self.branch_test_cases) == 0:
+            if len(self.branch_coverage_tests) == 0:
                 working = False
+
         pass
 
     def build_statement_coverage_set(self):
         working = True
-        x = 0
         while working:
             # sort
             self.statement_coverage_tests = sorted(self.statement_coverage_tests, cmp=self.compare_statements)
@@ -74,9 +77,8 @@ class Additional(Prioritization):
                 working = False
 
             if len(self.statement_coverage_tests) == 0:
-                working = False
+                break
 
-            x += 1
         pass
 
     def compare_statements(self, a, b):
