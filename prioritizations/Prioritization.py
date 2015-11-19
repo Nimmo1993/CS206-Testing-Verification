@@ -10,17 +10,28 @@ class Prioritization(object):
         self.statement_coverage_tests = []
         self.branch_coverage_tests = []
 
-        self.branch_test_cases = {}
-        self.statement_test_cases = {}
+        self.statement_coverage_total = 0.0
 
+        self.tag = "[Prioritization]\t"
+
+        self.branch_test_cases = {'covered': {}, 'not': {}}
+        self.statement_test_cases = {'covered': set(), 'not': set()}
+
+        # build the simple test cases we need to discern coverage
         for x in self.tests[0]['branches']['coverage']:
-            self.branch_test_cases[int(x)] = []
+            self.branch_test_cases['not'][int(x)] = set()
+            y = 0
             for index in self.tests[0]['branches']['coverage'].get(x):
-                self.branch_test_cases[int(x)].append(False)
+                self.branch_test_cases['not'][int(x)].add(y)
+                self.branch_test_cases['covered'][int(x)] = set()
+                y += 1
+                pass
 
+        # build the simple test cases we need to discern coverage
         for x in self.tests[0]['statements']['coverage']:
-            self.statement_test_cases[int(x)] = False
+            self.statement_test_cases['not'].add(int(x))
 
+        # split the test up into their respective containers
         for key in self.tests:
             self.statement_coverage_tests.append(self.tests[key].get('statements'))
             self.branch_coverage_tests.append(self.tests[key].get('branches'))
@@ -30,18 +41,27 @@ class Prioritization(object):
 
     def mutate_statement_test(self, statements):
         mutated = False
-        for x in self.statement_test_cases:
-            if self.statement_test_cases[x] == False and statements[x] == True:
-                self.statement_test_cases[x] = True
-                mutated = True
+        not_covered = self.statement_test_cases['not'] - statements['covered']
+        covered = self.statement_test_cases['not'] - (self.statement_test_cases['not'] - statements['covered'])
+        if len(covered) > 0:
+            for x in covered:
+                self.statement_test_cases['not'].remove(x)
+                self.statement_test_cases['covered'].add(x)
+            mutated = True
         return mutated
 
     def mutate_branch_test(self, branches):
         mutated = False
-        for x in self.branch_test_cases:
-            for y, value in enumerate(self.branch_test_cases[x]):
-                if self.branch_test_cases[x][y] == False and branches[x][y] == True:
-                    self.branch_test_cases[x][y] = True
+
+        for branch in branches['coverage']:
+            if branch in self.branch_test_cases['not']:
+                not_covered = self.branch_test_cases['not'][branch] - branches['covered'][branch]
+                covered = self.branch_test_cases['not'][branch] - \
+                          (self.branch_test_cases['not'][branch] - branches['covered'][branch])
+                if len(covered) > 0:
+                    for x in covered:
+                        self.branch_test_cases['not'][branch].remove(x)
+                        self.branch_test_cases['covered'][branch].add(x)
                     mutated = True
         return mutated
 

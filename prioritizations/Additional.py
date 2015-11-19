@@ -2,66 +2,14 @@ from .Prioritization import Prioritization
 
 
 """
-T5: Additional branch coverage prioritization. Total
-branch coverage prioritization schedules test cases in the order
-of total coverage achieved. However, having executed a
-test case and covered certain branches, more may be gained
-in subsequent test cases by covering branches that have not
-yet been covered. Additional branch coverage prioritization
-iteratively selects a test case that yields the greatest branch
-coverage, then adjusts the coverage information on subsequent
-test cases to indicate their coverage of branches not
-yet covered, and then repeats this process, until all branches
-covered by at least one test case have been covered.
-Having scheduled test cases in this fashion, we may be
-left with additional test cases that cannot add additional
-branch coverage. We could order these next using any prioritization
-technique; in this work we order the remaining
-test cases using total branch coverage prioritization.
-Because additional branch coverage prioritization requires
-recalculation of coverage information for each unprioritized
-test case following selection of each test case, its
-cost is O(n^2) for programs containing n branches
-
-T4: Additional statement coverage prioritization. Additional
-statement coverage prioritization is like total coverage
-prioritization, but it relies on feedback about coverage
-attained so far in testing to focus on statements not yet
-covered. To do this, the technique greedily selects a test case
-that yields the greatest statement coverage, then adjusts the
-coverage data about subsequent test cases to indicate their
-coverage of statements not yet covered, and then iterates
-until all statements covered by at least one test case have
-been covered. When all statements have been covered, the
-remaining test cases are covered (recursively) by resetting
-all statements to \"not covered\" and reapplying additional
-statement coverage on the remaining test cases.
-For a test suite and program containing m test cases and
-n statements, respectively, the cost of additional statement
-coverage prioritization is O(m^2 n), a factor of m more than
-total statement coverage prioritization
-
-The additional statement (addtl-st) prioritization technique
-selects, in turn, the next test case that covers the maximum
-number of statements not yet covered in the previous
-round. When no remaining test case can improve the statement
-coverage, the technique will reset all the statements to
-\"not covered\" and reapply addtl-st on the remaining test
-cases. When more than one test case covers the same number
-of statements not yet covered, it just selects one of them
-randomly. The additional function (addtl-fn) and additional
-branch (addtl-br) test case prioritization technique are the
-same as addtl-st, except that it uses function and branch
-coverage information instead of statement coverage information[11][12]
-[13].
-
 1) Sort the test cases by coverage_count
 2) add the top element to the results
 3) remove the element from the list
 4) resort the test cases relative to the coverage of the first one
     -we want to resort based on previous coverage. So the
         test cases that have the most coverage of what is remaining
-5) repeat 2-4 until as close to 100% as possible
+5) repeat 2-4 until as close to 100% as possible, or a test case
+        provides no additional coverage
 """
 
 
@@ -75,105 +23,83 @@ class Additional(Prioritization):
 
     def __init__(self, tests):
         Prioritization.__init__(self, tests)
-
-        for test in self.tests:
-            self.statement_coverage_tests.append(self.tests[test].get('statements'))
-            self.branch_coverage_tests.append(self.tests[test].get('branches'))
+        self.tag = "[Additional]\t"
 
         # sort the branch and statement by their coverage count
-        tempa = sorted(self.statement_coverage_tests,
-                                               key=lambda x: x['covered_count'], reverse=True)
-        tempb = sorted(self.branch_coverage_tests, key=lambda x: x['covered_count'], reverse=True)
-
-        print tempa
+        self.statement_coverage_tests = sorted(self.statement_coverage_tests,
+                   key=lambda x: x['covered_count'], reverse=True)
+        self.branch_coverage_tests = sorted(self.branch_coverage_tests, key=lambda x: x['covered_count'], reverse=True)
 
         # We automatically take the first element as it maintains the highest coverage
         self.results['statements'].append(self.statement_coverage_tests[0])
         self.results['branches'].append(self.branch_coverage_tests[0])
 
+        self.mutate_statement_test(self.results['statements'][0])
+        self.mutate_branch_test(self.results['branches'][0])
+
         del self.statement_coverage_tests[0]
         del self.branch_coverage_tests[0]
 
-        tempc = sorted(tempa, cmp=self.compare_statements)
-        tempd = sorted(tempb, cmp=self.compare_branches)
-
-        print tempc
-
-        #self.build_coverage()
+        self.build_branch_coverage_set()
+        self.build_statement_coverage_set()
         pass
 
-    """
-    Sort the lists, add the top element from the list to result, remove it from the test set
-    compare all elements remaining to the last element on the results
-    add whichever elements are different to a new list.
-    repeat
-    """
-    def build_coverage(self):
+    def build_branch_coverage_set(self):
+        working = True
+        while working:
+            # sort
+            self.branch_coverage_tests = sorted(self.branch_coverage_tests, cmp=self.compare_branches)
 
-        temp_statements = []
-        temp_branches = []
+            if self.mutate_branch_test(self.branch_coverage_tests[0]):
+                self.results['branches'].append(self.branch_coverage_tests[0])
+                del self.branch_coverage_tests[0]
+            else:
+                working = False
 
-        """
-        Run for statements
-        """
-        for test in self.statement_coverage_tests:
-            # see if we can pare anything from the list before we begin...
-            if Prioritization.same_coverage(test['not'], self.results['statements'][-1]['not']) is False:
-                temp_statements.append(test)
+            if len(self.branch_test_cases) == 0:
+                working = False
+        pass
 
-        print "pre Length of temp_statements: ", len(temp_statements)
+    def build_statement_coverage_set(self):
+        working = True
+        x = 0
+        while working:
+            # sort
+            self.statement_coverage_tests = sorted(self.statement_coverage_tests, cmp=self.compare_statements)
 
-        count = 0
-        while len(temp_statements) > 0 and count < 4:
-            print "Length of temp_statements: ", len(temp_statements)
-            temp_statements = sorted(temp_statements, key=lambda covered: covered['covered_count'], reverse=True)
-            for x in range(0, len(temp_statements)):
-                print x
-                if Prioritization.same_coverage(temp_statements[x]['not'],
-                                                self.statement_coverage_tests[-1]['not']) is True:
-                    del temp_statements[x]
-                    print "len:",len(temp_statements)
-            count += 1
-            pass
+            if self.mutate_statement_test(self.statement_coverage_tests[0]):
+                self.results['statements'].append(self.statement_coverage_tests[0])
+                del self.statement_coverage_tests[0]
+            else:
+                working = False
 
-        return
-        """
-        Run for branches
-        """
-        for test in self.branch_coverage_tests:
-            # always compare against the last element added, because that covers the next least
-            if not Prioritization.same_coverage(test['not'], self.results['branches'][-1]['not']):
-                temp_branches.append(test)
+            if len(self.statement_coverage_tests) == 0:
+                working = False
 
-        count = 0
-        while len(temp_branches) > 0 and count < 4:
-            # we must sort the list at each iteration according to the algorithm
-            temp_branches = sorted(temp_branches, key=lambda x: x['covered_count'], reverse=True)
-            for x in range(0, len(temp_branches)):
-                # compare against the last element added to results for differences
-                if Prioritization.same_coverage(temp_branches[x]['not'], self.branch_coverage_tests[-1]['not']) is True:
-                    del temp_branches[x]
-                else:
-                    temp_branches.append(temp_branches[x])
-            count += 1
-            pass
+            x += 1
+        pass
 
     def compare_statements(self, a, b):
-        if len(a['covered'] - self.results['statements'][-1]['covered']) > \
-                len(b['covered'] - self.results['statements'][-1]['covered']):
+        if len(a['covered'].intersection(self.statement_test_cases['not'])) < \
+                len(b['covered'].intersection(self.statement_test_cases['not'])):
             return 1
-        elif len(a['covered'] - self.results['statements'][-1]['covered']) > \
-                len(b['covered'] - self.results['statements'][-1]['covered']):
+        elif len(a['covered'].intersection(self.statement_test_cases['not'])) > \
+                len(b['covered'].intersection(self.statement_test_cases['not'])):
             return -1
         else:
             return 0
 
     def compare_branches(self, a, b):
-        if len(a['covered'] - self.results['branches'][-1]['covered']) > \
-                len(b['covered'] - self.results['branches'][-1]['covered']):
+        a_changes = 0
+        b_changes = 0
+
+        for res in a['covered']:
+            a_changes += len(a['covered'][res].intersection(self.branch_test_cases['not'][res]))
+            b_changes += len(b['covered'][res].intersection(self.branch_test_cases['not'][res]))
+
+        if a_changes < b_changes:
             return 1
-        elif len(a['covered'] - self.results['branches'][-1]['covered']) > \
-                len(b['covered'] - self.results['branches'][-1]['covered']):
+        elif a_changes > b_changes:
             return -1
         else:
             return 0

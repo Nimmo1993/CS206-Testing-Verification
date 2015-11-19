@@ -15,42 +15,47 @@ def main():
             break
     # print or run all benchmarks from here
     for (x, benchmark) in enumerate(benchmarks):
-
-        """
-        for test in benchmark.results:
-            branch = benchmark.results[test]['branches']
-            state = benchmark.results[test]['statements']
-            bc = float(branch['covered_count']) / (float(branch['covered_count']) + float(branch['not_count']))
-            sc = float(state['covered_count']) / (float(state['covered_count']) + float(state['not_count']))
-
-            print "Branch: id: {0}\nCovered: {1}\t Not: {2}\n Calculated Coverage: {3}".format(branch['id'], branch['covered_count'], branch['not_count'], bc)
-            print "Statement: id: {0}\nCovered: {1}\t Not: {2}\n Calculated Coverage: {3}".format(state['id'], state['covered_count'], state['not_count'], sc)
-            print "========================="
-        """
-
-        """
+        #"""
         random = Random(benchmark.results)
+        print tag, "=================="
         print "{0}Random: branches: {1}\t statements: {2}".format(tag, len(random.results['branches']),
                                                                len(random.results['statements']))
+        print random.results
+        for b in random.results['branches']:
+            print tag, b
+            pass
+        print "------"
+        for s in random.results['statements']:
+            print tag, s
+            pass
+        #"""
         """
-        """
-        total = Total(benchmark.results, benchmark.path, benchmark.name)
-        print "{0}Total: branches: {1}\t statements: {2}".format(tag, len(total.results['branches']),
+        total = Total(benchmark.results)
+        print tag, "=================="
+        print tag, "{0}Total: branches: {1}\t statements: {2}".format(tag, len(total.results['branches']),
                                                                  len(total.results['statements']))
         #print total.results['branches']
         for b in total.results['branches']:
-            print b
+            print tag, b
             pass
         print "------"
         for s in total.results['statements']:
+            print tag, s
+            pass
+        """
+        """
+        additional = Additional(benchmark.results)
+        print tag, "=================="
+        print "{0}Additional: branches: {1}\t statements: {2}".format(tag, len(additional.results['branches']),
+                                                                      len(additional.results['statements']))
+        for b in additional.results['branches']:
+            print b
+            pass
+        print "------"
+        for s in additional.results['statements']:
             print s
             pass
         """
-        #"""
-        additional = Additional(benchmark.results)
-        print "{0}Additional: branches: {1}\t statements: {2}".format(tag, len(additional.results['branches']),
-                                                                      len(additional.results['statements']))
-        #"""
         # benchmark.run_mutation_tests(random, total, additional)
         # benchmark.run_mutation_tests(None, None, None)
         break

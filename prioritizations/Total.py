@@ -47,13 +47,11 @@ class Total(Prioritization, object):
     provided, if test A is a subset of test B do not add
     else add the test case
     """
-    def __init__(self, tests, path, name):
+    def __init__(self, tests):
         Prioritization.__init__(self, tests)
 
         # get the important part of the
         # input so we can re-run gcov
-        self.name = name
-        self.path = path
         self.tag = "[Total]\t"
 
         self.results = {'statements': [], 'branches': []}
@@ -62,18 +60,18 @@ class Total(Prioritization, object):
                                                key=lambda x: x['covered_count'], reverse=True)
         self.branch_coverage_tests = sorted(self.branch_coverage_tests, key=lambda x: x['covered_count'], reverse=True)
 
-        self.build_branch_coverage_set_two()
-        self.build_statement_coverage_set_two()
+        self.build_branch_coverage_set()
+        self.build_statement_coverage_set()
 
         # self.build_coverage()
         pass
 
-    def build_statement_coverage_set_two(self):
+    def build_statement_coverage_set(self):
         for value in self.statement_coverage_tests:
-            if self.mutate_statement_test(value['coverage']):
+            if self.mutate_statement_test(value):
                 self.results['statements'].append(value)
 
-    def build_branch_coverage_set_two(self):
+    def build_branch_coverage_set(self):
         for x in self.branch_coverage_tests:
-            if self.mutate_branch_test(x['coverage']):
+            if self.mutate_branch_test(x):
                 self.results['branches'].append(x)

@@ -64,7 +64,6 @@ class Benchmark(object):
         self.run = False if self.name == "replace" else True
 
         os.chdir(self.path)
-        print os.getcwd()
 
         # Compile the file with the necessary gcov flags
         command = "{0} {1} {2}.c".format(Benchmark.__gcc, Benchmark.__gcc_out, self.name)
@@ -83,7 +82,8 @@ class Benchmark(object):
         if self.run:
             self.run_tests()
             print "{0}size of results: {1}".format(self.tag, len(self.results))
-            print "======================="
+            #print "{0}{1}".format(self.tag, self.results)
+            print "{0}=======================".format(self.tag)
         else:
             print "{0} unable to run {1}, currently disabled by self.run".format(self.tag, self.name)
 
@@ -92,7 +92,7 @@ class Benchmark(object):
     Run the tests available to the program
     """
     def run_tests(self):
-        x = 0
+        test_case = 1
         print "{0}Beginning to run tests for {1}".format(self.tag, self.name)
         os.chdir(self.path)
         with open(self.path + Benchmark.__universe) as f:
@@ -108,16 +108,16 @@ class Benchmark(object):
                 Benchmark.run_command(command)
 
                 # parse the gcov results
-                self.parse_gcov("{0}.c.gcov".format(self.name), x, output)
+                self.parse_gcov("{0}.c.gcov".format(self.name), test_case, output)
 
                 command = "rm -f {0}.c.gcov {0}.gcda".format(self.name)
                 Benchmark.run_command(command)
 
-                x += 1
+                test_case += 1
 
-                if x >= 10:
-                    #pass
-                    print "{0}quiting at {1}".format(self.tag, x)
+                if test_case >= 10:
+                    continue
+                    print "{0}quiting at {1}".format(self.tag, test_case)
                     break
 
     """
@@ -131,10 +131,14 @@ class Benchmark(object):
         branch = []
         statements = {}
         branches = {}
-        branches_covered = []
-        branches_not_covered = []
+        covered_branches = {}
+        not_covered_branches = {}
+        branches_covered = set()
+        branches_not_covered = set()
         statements_covered = []
         statements_not_covered = []
+        branches_taken = 0
+        branches_not_taken = 0
         with open(path) as f:
             for line in f:
                 split = line.split()
@@ -148,7 +152,11 @@ class Benchmark(object):
                     # we have a branch and we need to save it, then progress our line number
                     if still_branch:
                         branches[line_number] = branch
+                        covered_branches[line_number] = branches_covered
+                        not_covered_branches[line_number] = branches_not_covered
                         branch = []
+                        branches_covered = set()
+                        branches_not_covered = set()
                         still_branch = False
                     # Get the line number and add it to the statements
                     line_number = int(split[1].split(':')[0])
@@ -160,28 +168,29 @@ class Benchmark(object):
                 else:
                     if split[3] == "executed" and split[2] == "never":
                         branch.append(False)
+                        branches_not_covered.add(int(split[1]))
+                        branches_not_taken += 1
                     else:
                         branch.append(True if int(split[3]) >= 1 else False)
-                    # add the line numbers to the covered/not arrays
-                    if branch[len(branch) - 1] is True:
-                        branches_covered.append(line_number)
-                    else:
-                        branches_not_covered.append(line_number)
+                        if branch[-1]:
+                            branches_covered.add(int(split[1]))
+                        else:
+                            branches_not_covered.add(int(split[1]))
+                        branches_taken += 1
                     still_branch = True
 
-        # print "Test: {0} has statement coverage of: {1}".format(test_number, float(len(statements_covered)/(float(len(statements_not_covered)) + float(len(statements_covered)))))
-        # print "Test: {0} has branch coverage of: {1}".format(test_number, float(len(branches_covered)/(float(len(branches_not_covered)) + float(len(branches_covered)))))
-        self.results[test_number] = {'statements': {'coverage': statements,
+        # add the element to the results
+            self.results[test_number-1] = {'statements': {'coverage': statements,
                                                     'covered': set(statements_covered),
                                                     'not': set(statements_not_covered),
                                                     'id': test_number, 'covered_count': len(statements_covered),
                                                     'not_count': len(statements_not_covered),
                                                     'output': output},
                                      'branches': {'coverage': branches,
-                                                  'covered': set(branches_covered),
-                                                  'not': set(branches_not_covered),
-                                                  'id': test_number, 'covered_count': len(branches_covered),
-                                                  'not_count': len(branches_not_covered),
+                                                  'covered': covered_branches,
+                                                  'not': not_covered_branches,
+                                                  'id': test_number, 'covered_count': branches_taken,
+                                                  'not_count': branches_not_taken,
                                                   'output': output}}
 
     """
