@@ -73,6 +73,8 @@ def main():
         ###
         # print benchmark
         ###
+
+    diff.print_diff()
     print tag, "Ensure you remove the \"limit\" variable before turning this in!!!!!"
 
 if __name__ == "__main__":
