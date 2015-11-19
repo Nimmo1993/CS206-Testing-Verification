@@ -42,6 +42,7 @@ class Difference(object):
         # iterate the branch/statement of the actual results
         for types in iterate:
             self.results[coverage][mutant][types] = []
+            self.results[coverage][mutant]['output'] = []
             # iterate all the tests in the actual result
             for test in iterate[types]:
                 # iterate the index of the
@@ -50,6 +51,8 @@ class Difference(object):
                         self.results[coverage][mutant][types].append(self.diff_statement(test, self.mutant_results[coverage][mutant][test['id']][t][types]))
                     elif types == "branches":
                         self.results[coverage][mutant][types].append(self.diff_branch(test, self.mutant_results[coverage][mutant][test['id']][t][types]))
+                    if test['output'] != self.mutant_results[coverage][mutant][test['id']][t][types]['output']:
+                        self.results[coverage][mutant]['output'].append(self.mutant_results[coverage][mutant][test['id']][t][types]['output'])
 
     """
     This checks the difference between the
