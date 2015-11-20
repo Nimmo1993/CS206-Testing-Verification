@@ -33,23 +33,23 @@ def main():
             print tag, "=================="
             print "{0}Random: branches: {1}\t statements: {2}".format(tag, len(random.results['branches']),
                                                                    len(random.results['statements']))
-            print random.results
+            print tag, random.results
             for b in random.results['branches']:
                 print tag, b
                 pass
-            print "------"
+            print tag, "------"
             for s in random.results['statements']:
                 print tag, s
                 pass
         if run_total['run'] and run_total['display']:
             print tag, "=================="
-            print tag, "{0}Total: branches: {1}\t statements: {2}".format(tag, len(total.results['branches']),
+            print "{0}Total: branches: {1}\t statements: {2}".format(tag, len(total.results['branches']),
                                                                      len(total.results['statements']))
             #print total.results['branches']
             for b in total.results['branches']:
                 print tag, b
                 pass
-            print "------"
+            print tag, "------"
             for s in total.results['statements']:
                 print tag, s
                 pass
@@ -58,11 +58,11 @@ def main():
             print "{0}Additional: branches: {1}\t statements: {2}".format(tag, len(additional.results['branches']),
                                                                           len(additional.results['statements']))
             for b in additional.results['branches']:
-                print b
+                print tag, b
                 pass
-            print "------"
+            print tag, "------"
             for s in additional.results['statements']:
-                print s
+                print tag, s
                 pass
 
         benchmark.run_mutation_tests(random, total, additional)
