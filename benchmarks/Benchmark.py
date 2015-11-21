@@ -49,7 +49,7 @@ class Benchmark(object):
     __gcov_obj_file = "--object-file executable"
     __gcov = "gcov -bc"
 
-    def __init__(self, path, line, limit):
+    def __init__(self, path, line, limit=-1):
         b = line.split('~')
         self.name = b[0]
         self.compile = b[1]
@@ -59,7 +59,7 @@ class Benchmark(object):
         self.path = path + self.name + "/"
         self.mutations = []
         self.tag = "[Benchmark]\t"
-        self.tests = []
+        self.tests = dict()
         self.mutant_results = {'random': {}, 'total': {}, 'additional': {}}
         self.run = False if self.name == "replace" else True
         if limit == -1:
@@ -104,7 +104,7 @@ class Benchmark(object):
         os.chdir(self.path)
         with open(self.path + Benchmark.__universe) as f:
             for line in f:
-                self.tests.append(line.strip())
+                self.tests[test_case] = line.strip()
                 # run the test set given our newly compiled file
                 command = "./{0} {1}".format(Benchmark.__gcc_out, line)
                 out = Benchmark.run_command(command)
@@ -115,7 +115,7 @@ class Benchmark(object):
                 Benchmark.run_command(command)
 
                 # parse the gcov results
-                self.results = self.parse_gcov("{0}.c.gcov".format(self.name), iteration, output)
+                self.results[test_case] = self.parse_gcov("{0}.c.gcov".format(self.name), test_case, output)
 
                 command = "rm -f {0}.c.gcov {0}.gcda".format(self.name)
                 Benchmark.run_command(command)
@@ -147,7 +147,6 @@ class Benchmark(object):
         statements_not_covered = []
         branches_taken = 0
         branches_not_taken = 0
-        res = {}
         with open(path) as f:
             for line in f:
                 split = line.split()
@@ -188,7 +187,7 @@ class Benchmark(object):
                     still_branch = True
 
                     # add the element to the results
-            res[test_number - 1] = {'statements': {'coverage': statements,
+            res = {'statements': {'coverage': statements,
                                                    'covered': set(statements_covered),
                                                    'not': set(statements_not_covered),
                                                    'id': test_number, 'covered_count': len(statements_covered),
@@ -216,8 +215,9 @@ class Benchmark(object):
             print self.tag, "Running: ", mutation
             os.chdir(mutation)
             # Compile the file with the necessary gcov flags
-            command = "{0} {1} {2}.c".format(Benchmark.__gcc, Benchmark.__gcc_out, self.name)
-            Benchmark.run_command(command)
+            if not os.path.isfile(Benchmark.__gcc_out):
+                command = "{0} {1} {2}.c".format(Benchmark.__gcc, Benchmark.__gcc_out, self.name)
+                Benchmark.run_command(command)
             name = mutation.split('/')[-1]
 
             self.mutant_results['total'][name] = {}

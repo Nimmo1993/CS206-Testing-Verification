@@ -4,17 +4,33 @@ from prioritizations.Total import Total
 from prioritizations.Random import Random
 from prioritizations.Additional import Additional
 import sys
+import csv
 
 tag = "[main]\t"
 
 run_random = {'run': True, 'display': False}
 run_total = {'run': True, 'display': False}
 run_additional = {'run': True, 'display': False}
-run_limit = 3
+__single = "single/"
+__union = "union/"
+run_limit = -1
 
 
 def main():
     benchmarks = []
+
+    if not os.path.isdir(sys.argv[3]):
+        print "{0}{1} didn't exist, creating {1} now.".format(tag, sys.argv[3])
+        os.mkdir(sys.argv[3])
+
+    if not os.path.isdir(sys.argv[3] + "/" + __single):
+        print "{0}{1}/{2} didn't exist, creating {1} now.".format(tag, sys.argv[3], __single)
+        os.mkdir(sys.argv[3] + "/" + __single)
+
+    if not os.path.isdir(sys.argv[3] + "/" + __union):
+        print "{0}{1}/{2} didn't exist, creating {1} now.".format(tag, sys.argv[3], __union)
+        os.mkdir(sys.argv[3] + "/" + __union)
+
     # read all input and create benchmarks for us
     with open(sys.argv[1]) as f:
         for line in f:
@@ -74,8 +90,12 @@ def main():
         # print benchmark
         ###
 
-    diff.print_diff()
-    print tag, "Ensure you remove the \"limit\" variable before turning this in!!!!!"
+    diff.write_results(sys.argv[3] + __single + benchmark.name)
+    # diff.write_coverage_diff(sys.argv[3] + __single + benchmark.name)
+    diff.write_raw_results(sys.argv[3] + __single + benchmark.name)
+    if run_limit != -1:
+        for x in range(0,1000):
+            print tag, "Ensure you remove the \"limit\" variable before turning this in!!!!!"
 
 if __name__ == "__main__":
     print tag, "Run Random? {0}".format(run_random)

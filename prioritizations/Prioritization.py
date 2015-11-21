@@ -1,3 +1,4 @@
+import json
 
 
 class Prioritization(object):
@@ -10,25 +11,23 @@ class Prioritization(object):
         self.statement_coverage_tests = []
         self.branch_coverage_tests = []
 
-        self.statement_coverage_total = 0.0
-
         self.tag = "[Prioritization]\t"
 
         self.branch_test_cases = {'covered': {}, 'not': {}}
         self.statement_test_cases = {'covered': set(), 'not': set()}
 
         # build the simple test cases we need to discern coverage
-        for x in self.tests[0]['branches']['coverage']:
+        for x in self.tests[1]['branches']['coverage']:
             self.branch_test_cases['not'][int(x)] = set()
             y = 0
-            for index in self.tests[0]['branches']['coverage'].get(x):
+            for index in self.tests[1]['branches']['coverage'].get(x):
                 self.branch_test_cases['not'][int(x)].add(y)
                 self.branch_test_cases['covered'][int(x)] = set()
                 y += 1
                 pass
 
         # build the simple test cases we need to discern coverage
-        for x in self.tests[0]['statements']['coverage']:
+        for x in self.tests[1]['statements']['coverage']:
             self.statement_test_cases['not'].add(int(x))
 
         # split the test up into their respective containers
