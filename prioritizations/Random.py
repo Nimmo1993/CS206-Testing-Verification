@@ -11,6 +11,7 @@ class Random(Prioritization):
         Prioritization.__init__(self, tests)
         self.tag = "[Random]\t"
 
+    def build_single(self):
         # randomly shuffle the test cases
         random.shuffle(self.branch_coverage_tests)
         random.shuffle(self.statement_coverage_tests)
@@ -32,3 +33,17 @@ class Random(Prioritization):
         for index in self.branch_coverage_tests:
             if self.mutate_branch_test(index):
                 self.results['branches'].append(index)
+
+    def build_union(self):
+        random.shuffle(self.union_tests)
+        self.build_union_coverage_set()
+        pass
+
+    def build_union_coverage_set(self):
+        for index in self.union_tests:
+            if index['type'] == 'statement':
+                if self.mutate_statement_test(index):
+                    self.union_results['statements'].append(index)
+            elif index['type'] == 'branch':
+                if self.mutate_branch_test(index):
+                    self.union_results['branches'].append(index)

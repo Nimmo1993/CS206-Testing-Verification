@@ -1,4 +1,5 @@
 import json
+import random
 
 
 class Prioritization(object):
@@ -15,6 +16,10 @@ class Prioritization(object):
 
         self.branch_test_cases = {'covered': {}, 'not': {}}
         self.statement_test_cases = {'covered': set(), 'not': set()}
+
+        self.results = {'branches': [], 'statements': []}
+        self.union_tests = []
+        self.union_results = {'branches': [], 'statements': []}
 
         # build the simple test cases we need to discern coverage
         for x in self.tests[1]['branches']['coverage']:
@@ -35,7 +40,10 @@ class Prioritization(object):
             self.statement_coverage_tests.append(self.tests[key].get('statements'))
             self.branch_coverage_tests.append(self.tests[key].get('branches'))
 
-        self.results = {'branches': [], 'statements': []}
+        # add the union tests to the array
+        for key, value in self.tests.items():
+            self.union_tests.append(value['statements'])
+            self.union_tests.append(value['branches'])
         pass
 
     def mutate_statement_test(self, statements):

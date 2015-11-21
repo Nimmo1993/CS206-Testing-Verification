@@ -25,6 +25,7 @@ class Additional(Prioritization):
         Prioritization.__init__(self, tests)
         self.tag = "[Additional]\t"
 
+    def build_single(self):
         # sort the branch and statement by their coverage count
         self.statement_coverage_tests = sorted(self.statement_coverage_tests,
                    key=lambda x: x['covered_count'], reverse=True)
@@ -45,7 +46,44 @@ class Additional(Prioritization):
         if len(self.statement_coverage_tests) > 0:
             self.build_statement_coverage_set()
 
-        pass
+    def build_union(self):
+        self.union_tests = sorted(self.union_tests, key=lambda x: x['covered_count'], reverse=True)
+
+        if self.union_tests[0]['type'] == 'statement':
+            self.union_results['statements'].append(self.union_tests[0])
+            self.mutate_statement_test(self.union_tests[0])
+        elif self.union_tests[0]['type'] == 'branch':
+            self.union_results['branches'].append(self.union_tests[0])
+            self.mutate_branch_test(self.union_tests[0])
+
+        del self.union_tests[0]
+
+        if len(self.union_tests) > 0:
+            self.build_union_coverage()
+
+    def build_union_coverage(self):
+        statements = True
+        branches = True
+        while statements and branches:
+            # sort
+            self.union_tests = sorted(self.union_tests, cmp=self.compare_union)
+
+            if self.union_tests[0]['type'] == 'statement':
+                if self.mutate_statement_test(self.union_tests[0]):
+                    self.results['statements'].append(self.union_tests[0])
+                    del self.union_tests[0]
+                else:
+                    statements = False
+            elif self.union_tests[0]['type'] == 'branch':
+                if self.mutate_statement_test(self.union_tests[0]):
+                    self.results['branches'].append(self.union_tests[0])
+                    del self.union_tests[0]
+                else:
+                    branches = False
+
+            if len(self.union_tests) == 0:
+                statements = False
+                branches = False
 
     def build_branch_coverage_set(self):
         working = True
@@ -105,3 +143,48 @@ class Additional(Prioritization):
             return -1
         else:
             return 0
+
+    def compare_union(self, a, b):
+        if a['type'] == 'statement':
+            return self.compare_statements(a, b)
+        elif a['type'] == 'branch':
+            return self.compare_branches_union(a, b)
+
+    def compare_branches_union(self, a, b):
+        a_changes = 0
+        b_changes = 0
+
+        if a['type'] == 'branch' and b['type'] == 'branch':
+            for res in a['covered']:
+                a_changes += len(a['covered'][res].intersection(self.branch_test_cases['not'][res]))
+                b_changes += len(b['covered'][res].intersection(self.branch_test_cases['not'][res]))
+        else:
+            if a['type'] == 'branch':
+                a_changes = 0
+                b_changes = 1
+            else:
+                a_changes = 1
+                b_changes = 0
+
+        if a_changes < b_changes:
+            return 1
+        elif a_changes > b_changes:
+            return -1
+        else:
+            return 0
+
+    def compare_statements_union(self, a, b):
+        if a['type'] == 'statement' and b['type'] == 'statement':
+            if len(a['covered'].intersection(self.statement_test_cases['not'])) < \
+                    len(b['covered'].intersection(self.statement_test_cases['not'])):
+                return 1
+            elif len(a['covered'].intersection(self.statement_test_cases['not'])) > \
+                    len(b['covered'].intersection(self.statement_test_cases['not'])):
+                return -1
+            else:
+                return 0
+        else:
+            if a['type'] == 'statement':
+                return 1
+            else:
+                return -1

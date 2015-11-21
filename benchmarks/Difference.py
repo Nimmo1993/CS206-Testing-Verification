@@ -68,6 +68,7 @@ class Difference(object):
         for types in iterate:
             # iterate all the tests in the actual result
             for test in iterate[types]:
+                print test
                 if types == "statements":
                     statement[test['id']] = self.diff_statement(test, self.mutant_results[coverage][mutant][test['id']][types])
                 elif types == "branches":
@@ -76,10 +77,10 @@ class Difference(object):
                     output[types][test['id']] = self.mutant_results[coverage][mutant][test['id']][types]['output']
                     self.results[coverage][types] += 1
 
+                self.coverage_diff[coverage][mutant][test['id']] = {'branches': branch, 'statements': statement}
             self.results[coverage]['total'] = self.results[coverage]['branches'] + self.results[coverage]['statements']
         if len(output['branches']) > 0 or len(output['statements']) > 0:
             self.raw_results[coverage][mutant] = output
-        self.coverage_diff[coverage][mutant] = {'branches': branch, 'statements': statement}
     """
     This checks the difference between the
     implementation and the mutant.  The mutant

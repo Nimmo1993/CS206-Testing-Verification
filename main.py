@@ -13,7 +13,7 @@ run_total = {'run': True, 'display': False}
 run_additional = {'run': True, 'display': False}
 __single = "single/"
 __union = "union/"
-run_limit = -1
+run_limit = 5
 
 
 def main():
@@ -40,10 +40,17 @@ def main():
     for (x, benchmark) in enumerate(benchmarks):
         if run_random['run']:
             random = Random(benchmark.results)
+            #random.build_single()
+            random.build_union()
         if run_total['run']:
             total = Total(benchmark.results)
+            #total.build_single()
+            total.build_union()
         if run_additional['run']:
             additional = Additional(benchmark.results)
+            additional.build_single()
+            print "++++++++++++++++++"
+            additional.build_union()
 
         if run_random['run'] and run_random['display']:
             print tag, "=================="
@@ -81,20 +88,26 @@ def main():
                 print tag, s
                 pass
 
+        # run the mutations
         benchmark.run_mutation_tests(random, total, additional)
-        diff = Difference(mutant=benchmark.mutant_results, rand=random.results,
-                          total=total.results, add=additional.results)
-        # benchmark.run_mutation_tests(None, None, None)
+
+        # build the diff results for both the single and the union
+        #diff_single = Difference(mutant=benchmark.mutant_results, rand=random.results,
+        #                  total=total.results, add=additional.results)
+        #diff_union = Difference(mutant=benchmark.mutant_results, rand=random.union_results,
+        #                        total=total.union_results, add=additional.union_results)
+
+        #diff_single.write_results(sys.argv[3] + __single + benchmark.name)
+        #diff_single.write_raw_results(sys.argv[3] + __single + benchmark.name)
+
+        #diff_uniont.write_results(sys.argv[3] + __union + benchmark.name)
+        #diff_union.write_raw_results(sys.argv[3] + __union + benchmark.name)
         break
         ###
         # print benchmark
         ###
-
-    diff.write_results(sys.argv[3] + __single + benchmark.name)
-    # diff.write_coverage_diff(sys.argv[3] + __single + benchmark.name)
-    diff.write_raw_results(sys.argv[3] + __single + benchmark.name)
     if run_limit != -1:
-        for x in range(0,1000):
+        for x in range(0,10):
             print tag, "Ensure you remove the \"limit\" variable before turning this in!!!!!"
 
 if __name__ == "__main__":

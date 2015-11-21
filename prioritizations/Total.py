@@ -54,17 +54,15 @@ class Total(Prioritization, object):
         # input so we can re-run gcov
         self.tag = "[Total]\t"
 
-        self.results = {'statements': [], 'branches': []}
+        pass
 
+    def build_single(self):
         self.statement_coverage_tests = sorted(self.statement_coverage_tests,
                                                key=lambda x: x['covered_count'], reverse=True)
         self.branch_coverage_tests = sorted(self.branch_coverage_tests, key=lambda x: x['covered_count'], reverse=True)
 
         self.build_branch_coverage_set()
         self.build_statement_coverage_set()
-
-        # self.build_coverage()
-        pass
 
     def build_statement_coverage_set(self):
         for value in self.statement_coverage_tests:
@@ -75,3 +73,14 @@ class Total(Prioritization, object):
         for x in self.branch_coverage_tests:
             if self.mutate_branch_test(x):
                 self.results['branches'].append(x)
+
+    def build_union(self):
+        self.union_tests = sorted(self.union_tests, key=lambda x: x['covered_count'], reverse=True)
+
+        for value in self.union_tests:
+            if value['type'] == 'statement':
+                if self.mutate_statement_test(value):
+                    self.union_results['statements'].append(value)
+            elif value['type'] == 'branch':
+                if self.mutate_branch_test(value):
+                    self.union_results['branches'].append(value)

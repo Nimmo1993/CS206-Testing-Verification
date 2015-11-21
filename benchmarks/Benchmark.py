@@ -188,17 +188,17 @@ class Benchmark(object):
 
                     # add the element to the results
             res = {'statements': {'coverage': statements,
-                                                   'covered': set(statements_covered),
-                                                   'not': set(statements_not_covered),
-                                                   'id': test_number, 'covered_count': len(statements_covered),
-                                                   'not_count': len(statements_not_covered),
-                                                   'output': output},
-                                    'branches': {'coverage': branches,
-                                                 'covered': covered_branches,
-                                                 'not': not_covered_branches,
-                                                 'id': test_number, 'covered_count': branches_taken,
-                                                 'not_count': branches_not_taken,
-                                                 'output': output}}
+                                  'covered': set(statements_covered),
+                                  'not': set(statements_not_covered),
+                                  'id': test_number, 'covered_count': len(statements_covered),
+                                  'not_count': len(statements_not_covered),
+                                  'output': output, 'type': 'statement'},
+                   'branches': {'coverage': branches,
+                                'covered': covered_branches,
+                                'not': not_covered_branches,
+                                'id': test_number, 'covered_count': branches_taken,
+                                'not_count': branches_not_taken,
+                                'output': output, 'type': 'branch'}}
         return res
 
     """
@@ -236,8 +236,9 @@ class Benchmark(object):
                     command = "{0} {1}.c".format(Benchmark.__gcov, self.name)
                     Benchmark.run_command(command)
                     self.mutant_results['random'][name][record['id']] = self.parse_gcov("{0}.c.gcov"
-                                                                            .format(self.name), record['id'],
-                                                                          out[0].strip())
+                                                                                        .format(self.name),
+                                                                                        record['id'],
+                                                                                        out[0].strip())
                     # reset the gcov data
                     command = "rm -f {0}.c.gcov {0}.gcda".format(self.name)
                     Benchmark.run_command(command)
@@ -253,7 +254,8 @@ class Benchmark(object):
                     command = "{0} {1}.c".format(Benchmark.__gcov, self.name)
                     Benchmark.run_command(command)
                     self.mutant_results['total'][name][record['id']] = self.parse_gcov("{0}.c.gcov"
-                                                                   .format(self.name), record['id'], out[0].strip())
+                                                                                       .format(self.name), record['id'],
+                                                                                       out[0].strip())
 
                     # reset the gcov data
                     command = "rm -f {0}.c.gcov {0}.gcda".format(self.name)
@@ -269,8 +271,9 @@ class Benchmark(object):
                     command = "{0} {1}.c".format(Benchmark.__gcov, self.name)
                     Benchmark.run_command(command)
                     self.mutant_results['additional'][name][record['id']] = self.parse_gcov("{0}.c.gcov"
-                                                                        .format(self.name), record['id'],
-                                                                        out[0].strip())
+                                                                                            .format(self.name),
+                                                                                            record['id'],
+                                                                                            out[0].strip())
                     # reset the gcov data
                     command = "rm -f {0}.c.gcov {0}.gcda".format(self.name)
                     Benchmark.run_command(command)
