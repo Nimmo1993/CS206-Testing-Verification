@@ -83,6 +83,7 @@ class Difference(object):
                     statement[test['id']] = self.diff_statement(test, self.mutant_results[coverage][mutant][test['id']][types])
                 elif types == "branches":
                     branch[test['id']] = self.diff_branch(test, self.mutant_results[coverage][mutant][test['id']][types])
+
                 if test['output'] != self.mutant_results[coverage][mutant][test['id']][types]['output']:
                     output[types][test['id']] = self.mutant_results[coverage][mutant][test['id']][types]['output']
                     self.results[coverage][types] += 1

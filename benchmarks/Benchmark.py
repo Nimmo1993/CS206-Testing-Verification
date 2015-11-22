@@ -296,8 +296,8 @@ class Benchmark(object):
         for mutation in self.mutations:
             os.chdir(mutation)
             # Compile the file with the necessary gcov flags
-            if not os.path.isfile(Benchmark.__gcc_out):
-                command = "{0} {1} {2}.c".format(Benchmark.__gcc, Benchmark.__gcc_out, self.name)
+            if not os.path.isfile("{0}/{1}".format(mutation, Benchmark.__gcc_out)):
+                command = "{0} {1} {2}/{3}.c".format(Benchmark.__gcc, Benchmark.__gcc_out, mutation, self.name)
                 Benchmark.run_command(command)
             name = mutation.split('/')[-1]
 

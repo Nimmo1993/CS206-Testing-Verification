@@ -70,13 +70,13 @@ class Additional(Prioritization):
 
             if self.union_tests[0]['type'] == 'statement':
                 if self.mutate_statement_test(self.union_tests[0]):
-                    self.results['statements'].append(self.union_tests[0])
+                    self.union_results['statements'].append(self.union_tests[0])
                     del self.union_tests[0]
                 else:
                     statements = False
             elif self.union_tests[0]['type'] == 'branch':
-                if self.mutate_statement_test(self.union_tests[0]):
-                    self.results['branches'].append(self.union_tests[0])
+                if self.mutate_branch_test(self.union_tests[0]):
+                    self.union_results['branches'].append(self.union_tests[0])
                     del self.union_tests[0]
                 else:
                     branches = False
