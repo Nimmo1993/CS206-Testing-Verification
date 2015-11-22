@@ -237,7 +237,7 @@ class Benchmark(object):
             for bs in rand.results:
                 for record in rand.results[bs]:
                     # run the test set given our newly compiled file
-                    command = "{0} {1}".format(Benchmark.__gcc_out, self.tests[record['id']])
+                    command = "./{0} {1}".format(Benchmark.__gcc_out, self.tests[record['id']])
                     out = Benchmark.run_command(command)
                     # Create the .gcov file from the gcno and gcda data
                     command = "{0} {1}.c".format(Benchmark.__gcov, self.name)
@@ -253,7 +253,7 @@ class Benchmark(object):
             for bs in total.results:
                 for record in total.results[bs]:
                     # run the test set given our newly compiled file
-                    command = "{0} {1}".format(Benchmark.__gcc_out, self.tests[record['id']])
+                    command = "./{0} {1}".format(Benchmark.__gcc_out, self.tests[record['id']])
                     out = Benchmark.run_command(command)
                     # Create the .gcov file from the gcno and gcda data
                     command = "{0} {1}.c".format(Benchmark.__gcov, self.name)
@@ -270,7 +270,7 @@ class Benchmark(object):
             for bs in additional.results:
                 for record in additional.results[bs]:
                     # run the test set given our newly compiled file
-                    command = "{0} {1}".format(Benchmark.__gcc_out, self.tests[record['id']])
+                    command = "./{0} {1}".format(Benchmark.__gcc_out, self.tests[record['id']])
                     out = Benchmark.run_command(command)
                     # Create the .gcov file from the gcno and gcda data
                     command = "{0} {1}.c".format(Benchmark.__gcov, self.name)
@@ -311,7 +311,7 @@ class Benchmark(object):
             for bs in rand.union_results:
                 for record in rand.union_results[bs]:
                     # run the test set given our newly compiled file
-                    command = "{0} {1}".format(Benchmark.__gcc_out, self.tests[record['id']])
+                    command = "./{0} {1}".format(Benchmark.__gcc_out, self.tests[record['id']])
                     out = Benchmark.run_command(command)
                     # Create the .gcov file from the gcno and gcda data
                     command = "{0} {1}.c".format(Benchmark.__gcov, self.name)
@@ -328,7 +328,7 @@ class Benchmark(object):
             for bs in total.union_results:
                 for record in total.union_results[bs]:
                     # run the test set given our newly compiled file
-                    command = "{0} {1}".format(Benchmark.__gcc_out, self.tests[record['id']])
+                    command = "./{0} {1}".format(Benchmark.__gcc_out, self.tests[record['id']])
                     out = Benchmark.run_command(command)
                     # Create the .gcov file from the gcno and gcda data
                     command = "{0} {1}.c".format(Benchmark.__gcov, self.name)
@@ -345,7 +345,7 @@ class Benchmark(object):
             for bs in additional.union_results:
                 for record in additional.union_results[bs]:
                     # run the test set given our newly compiled file
-                    command = "{0} {1}".format(Benchmark.__gcc_out, self.tests[record['id']])
+                    command = "./{0} {1}".format(Benchmark.__gcc_out, self.tests[record['id']])
                     out = Benchmark.run_command(command)
                     # Create the .gcov file from the gcno and gcda data
                     command = "{0} {1}.c".format(Benchmark.__gcov, self.name)

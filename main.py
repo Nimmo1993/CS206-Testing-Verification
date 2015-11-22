@@ -13,7 +13,7 @@ run_total = {'run': True, 'display': False}
 run_additional = {'run': True, 'display': False}
 __single = "single/"
 __union = "union/"
-run_limit = 30
+run_limit = -1
 
 
 def main():
