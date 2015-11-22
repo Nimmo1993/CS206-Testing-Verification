@@ -62,7 +62,7 @@ class Benchmark(object):
         self.tests = dict()
         self.mutant_results_single = {'random': {}, 'total': {}, 'additional': {}}
         self.mutant_results_union = {'random': {}, 'total': {}, 'additional': {}}
-        self.run = True
+        self.run = True if self.name != 'replace' else False
         if limit == -1:
             self.limit = float("inf")
         else:
@@ -83,15 +83,17 @@ class Benchmark(object):
 
         # this is where we will store the results for our tests
         self.results = {}
+
+    def prepare_and_run(self):
         # run the tests on our non-mutated program
         if self.run:
             self.run_tests()
             #print "{0}size of results: {1}".format(self.tag, len(self.results))
-            # print "{0}{1}".format(self.tag, self.results)
         else:
             print "{0} unable to run {1}, currently disabled by self.run".format(self.tag, self.name)
 
             # print self.results
+
 
     """
     Run the tests available to the program
