@@ -13,7 +13,7 @@ run_total = {'run': True, 'display': False}
 run_additional = {'run': True, 'display': False}
 __single = "single/"
 __union = "union/"
-run_limit = -1
+run_limit = 30
 
 
 def main():
@@ -71,7 +71,8 @@ def main():
 
     if run_limit != -1:
         for x in range(0,10):
-            print tag, "Ensure you remove the \"limit\" variable before turning this in!!!!!"
+            pass
+            #print tag, "Ensure you remove the \"limit\" variable before turning this in!!!!!"
 
 if __name__ == "__main__":
     if len(sys.argv) != 4:

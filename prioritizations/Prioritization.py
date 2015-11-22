@@ -48,7 +48,7 @@ class Prioritization(object):
 
     def mutate_statement_test(self, statements):
         mutated = False
-        not_covered = self.statement_test_cases['not'] - statements['covered']
+        #not_covered = self.statement_test_cases['not'] - statements['covered']
         covered = self.statement_test_cases['not'] - (self.statement_test_cases['not'] - statements['covered'])
         if len(covered) > 0:
             for x in covered:
