@@ -5,7 +5,7 @@ import csv
 
 class Difference(object):
 
-    __results_file = "results.csv"
+    __results_file = "suite_size.csv"
     __diff_file = "diff.csv"
     __raw_file = "_raw.csv"
 
@@ -149,7 +149,7 @@ class Difference(object):
 
     def write_results(self, path=None):
         if path is not None:
-            with open(path + Difference.__results_file, 'a') as output_file:
+            with open(path + "_" + Difference.__results_file, 'a') as output_file:
                 keys = self.results['total'].keys()
                 writer = csv.DictWriter(output_file, keys)
                 writer.writeheader()
