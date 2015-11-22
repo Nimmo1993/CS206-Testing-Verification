@@ -145,26 +145,28 @@ class Additional(Prioritization):
             return 0
 
     def compare_union(self, a, b):
-        if a['type'] == 'statement':
+        if a['type'] == 'statement' and b['type'] == 'statement':
             return self.compare_statements(a, b)
-        elif a['type'] == 'branch':
-            return self.compare_branches_union(a, b)
+        elif a['type'] == 'branch' and b['type'] == 'branch':
+            return self.compare_branches(a, b)
+        else:
+            return self.compare_branch_to_statement(a, b)
 
-    def compare_branches_union(self, a, b):
+    def compare_branch_to_statement(self, a, b):
         a_changes = 0
         b_changes = 0
 
-        if a['type'] == 'branch' and b['type'] == 'branch':
+        if a['type'] == 'statement':
+            a_changes = len(a['covered'].intersection(self.statement_test_cases['not']))
+        else:
             for res in a['covered']:
                 a_changes += len(a['covered'][res].intersection(self.branch_test_cases['not'][res]))
-                b_changes += len(b['covered'][res].intersection(self.branch_test_cases['not'][res]))
+
+        if b['type'] == 'statement':
+            b_changes = len(b['covered'].intersection(self.statement_test_cases['not']))
         else:
-            if a['type'] == 'branch':
-                a_changes = 0
-                b_changes = 1
-            else:
-                a_changes = 1
-                b_changes = 0
+            for res in b['covered']:
+                b_changes += len(b['covered'][res].intersection(self.branch_test_cases['not'][res]))
 
         if a_changes < b_changes:
             return 1
@@ -172,19 +174,4 @@ class Additional(Prioritization):
             return -1
         else:
             return 0
-
-    def compare_statements_union(self, a, b):
-        if a['type'] == 'statement' and b['type'] == 'statement':
-            if len(a['covered'].intersection(self.statement_test_cases['not'])) < \
-                    len(b['covered'].intersection(self.statement_test_cases['not'])):
-                return 1
-            elif len(a['covered'].intersection(self.statement_test_cases['not'])) > \
-                    len(b['covered'].intersection(self.statement_test_cases['not'])):
-                return -1
-            else:
-                return 0
-        else:
-            if a['type'] == 'statement':
-                return 1
-            else:
-                return -1
+        pass

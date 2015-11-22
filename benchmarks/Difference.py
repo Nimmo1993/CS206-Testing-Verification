@@ -25,23 +25,12 @@ class Difference(object):
         self.results = {'random': {'branches': 0, 'statements': 0, 'total': 0},
                         'total': {'branches': 0, 'statements': 0, 'total': 0},
                         'additional': {'branches': 0, 'statements': 0, 'total': 0}}
-
-        self.find_differences(self.random)
-        self.find_differences(self.total)
-        self.find_differences(self.additional)
-        print self.tag, "results: ", self.results
-        print self.tag, "raw_results:", self.raw_results
-        print self.tag, "coverage_diff:", self.coverage_diff
         pass
 
     """
-    this cycles both lists in order
-    to 'align' them so that we can
-    discern what the difference
-    actually is between the
-    mutant and implementation
+    Do it for single
     """
-    def find_differences(self, input):
+    def find_differences_single(self):
         # iterate the random/total/additional coverages
         for coverage in self.mutant_results:
             self.raw_results[coverage] = {}
@@ -50,16 +39,38 @@ class Difference(object):
             for mutant in self.mutant_results[coverage]:
                 self.raw_results[coverage][mutant] = {}
                 if coverage == "random":
-                    self.iterate_diff(self.random, coverage, mutant)
+                    self.iterate_diff_single(self.random, coverage, mutant)
                 elif coverage == "total":
-                    self.iterate_diff(self.total, coverage, mutant)
+                    self.iterate_diff_single(self.total, coverage, mutant)
                 elif coverage == "additional":
-                    self.iterate_diff(self.additional, coverage, mutant)
+                    self.iterate_diff_single(self.additional, coverage, mutant)
 
-        return None
+        # print self.tag, "results: ", self.results
+        # print self.tag, "raw_results:", self.raw_results
+        # print self.tag, "coverage_diff:", self.coverage_diff
 
-    def iterate_diff(self, iterate, coverage, mutant):
-        # iterate the branch/statement of the actual results
+    """
+    Do it for union
+    """
+    def find_differences_union(self):
+        # iterate the random/total/additional coverages
+        for coverage in self.mutant_results:
+            self.raw_results[coverage] = {}
+            # iterate all the mutants in that coverage form is
+            # {id: {index: {...test-data}}}
+            for mutant in self.mutant_results[coverage]:
+                self.raw_results[coverage][mutant] = {}
+                if coverage == "random" and len(self.mutant_results[coverage][mutant]) > 0:
+                    self.iterate_diff_union(self.random, coverage, mutant)
+                elif coverage == "total" and len(self.mutant_results[coverage][mutant]) > 0:
+                    self.iterate_diff_union(self.total, coverage, mutant)
+                elif coverage == "additional" and len(mutant) > 0:
+                    self.iterate_diff_union(self.additional, coverage, mutant)
+
+    """
+    Do it for union
+    """
+    def iterate_diff_union(self, iterate, coverage, mutant):
         output = {'branches': {}, 'statements': {}}
         branch = {}
         statement = {}
@@ -68,7 +79,6 @@ class Difference(object):
         for types in iterate:
             # iterate all the tests in the actual result
             for test in iterate[types]:
-                print test
                 if types == "statements":
                     statement[test['id']] = self.diff_statement(test, self.mutant_results[coverage][mutant][test['id']][types])
                 elif types == "branches":
@@ -81,6 +91,33 @@ class Difference(object):
             self.results[coverage]['total'] = self.results[coverage]['branches'] + self.results[coverage]['statements']
         if len(output['branches']) > 0 or len(output['statements']) > 0:
             self.raw_results[coverage][mutant] = output
+
+    """
+    Do it for single
+    """
+    def iterate_diff_single(self, iterate, coverage, mutant):
+        # iterate the branch/statement of the actual results
+        output = {'branches': {}, 'statements': {}}
+        branch = {}
+        statement = {}
+        self.coverage_diff[coverage] = {mutant: {}}
+        # print self.tag, self.mutant_results[coverage][mutant]
+        for types in iterate:
+            # iterate all the tests in the actual result
+            for test in iterate[types]:
+                if types == "statements":
+                    statement[test['id']] = self.diff_statement(test, self.mutant_results[coverage][mutant][test['id']][types])
+                elif types == "branches":
+                    branch[test['id']] = self.diff_branch(test, self.mutant_results[coverage][mutant][test['id']][types])
+                if test['output'] != self.mutant_results[coverage][mutant][test['id']][types]['output']:
+                    output[types][test['id']] = self.mutant_results[coverage][mutant][test['id']][types]['output']
+                    self.results[coverage][types] += 1
+
+                self.coverage_diff[coverage][mutant][test['id']] = {'branches': branch, 'statements': statement}
+            self.results[coverage]['total'] = self.results[coverage]['branches'] + self.results[coverage]['statements']
+        if len(output['branches']) > 0 or len(output['statements']) > 0:
+            self.raw_results[coverage][mutant] = output
+
     """
     This checks the difference between the
     implementation and the mutant.  The mutant
@@ -89,21 +126,26 @@ class Difference(object):
 
     def diff_branch(self, a, b):
         difference = {}
-        for key in a['covered']:
-            if key in b['covered']:
-                diff = b['covered'][key] - a['covered'][key]
-                if len(diff) > 0:
-                    difference[key] = diff
-            else:
-                if len(a['covered'][key]) > 0:
-                    difference[key] = a['covered'][key]
+        if a['type'] == 'branch' and b['type'] == 'branch':
+            for key in a['covered']:
+                if key in b['covered']:
+                    diff = b['covered'][key] - a['covered'][key]
+                    if len(diff) > 0:
+                        difference[key] = diff
+                else:
+                    if len(a['covered'][key]) > 0:
+                        difference[key] = a['covered'][key]
         return difference
 
     def diff_statement(self, a, b):
-        diff = b['covered'] - a['covered']
-        if len(diff) > 0:
-            return diff
+        if a['type'] == 'statement' and b['type'] == 'statement':
+            diff = b['covered'] - a['covered']
+            if len(diff) > 0:
+                return diff
         return set()
+
+    def diff_between_branch_statement(self, a, b):
+        pass
 
     def write_results(self, path=None):
         if path is not None:
@@ -125,7 +167,8 @@ class Difference(object):
             pass
             #with open(path + "/" + Difference.__diff_file, 'a') as output_file:
         else:
-            print self.tag, self.coverage_diff
+            #print self.tag, self.coverage_diff
+            pass
 
     def write_raw_results(self, path=None):
         if path is not None:

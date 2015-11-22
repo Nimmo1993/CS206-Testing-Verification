@@ -60,8 +60,9 @@ class Benchmark(object):
         self.mutations = []
         self.tag = "[Benchmark]\t"
         self.tests = dict()
-        self.mutant_results = {'random': {}, 'total': {}, 'additional': {}}
-        self.run = False if self.name == "replace" else True
+        self.mutant_results_single = {'random': {}, 'total': {}, 'additional': {}}
+        self.mutant_results_union = {'random': {}, 'total': {}, 'additional': {}}
+        self.run = True
         if limit == -1:
             self.limit = float("inf")
         else:
@@ -87,7 +88,6 @@ class Benchmark(object):
             self.run_tests()
             print "{0}size of results: {1}".format(self.tag, len(self.results))
             # print "{0}{1}".format(self.tag, self.results)
-            print "{0}=======================".format(self.tag)
         else:
             print "{0} unable to run {1}, currently disabled by self.run".format(self.tag, self.name)
 
@@ -96,7 +96,6 @@ class Benchmark(object):
     """
     Run the tests available to the program
     """
-
     def run_tests(self):
         test_case = 1
         iteration = 0
@@ -209,10 +208,11 @@ class Benchmark(object):
     3) save the results for analysis
     """
 
-    def run_mutation_tests(self, rand, total, additional):
+    def run_mutation_tests_single(self, rand, total, additional):
         x = 0
+        print self.tag, "Single is running mutations for: ", self.name
         for mutation in self.mutations:
-            print self.tag, "Running: ", mutation
+            #print self.tag, "Running: ", mutation
             os.chdir(mutation)
             # Compile the file with the necessary gcov flags
             if not os.path.isfile(Benchmark.__gcc_out):
@@ -220,9 +220,9 @@ class Benchmark(object):
                 Benchmark.run_command(command)
             name = mutation.split('/')[-1]
 
-            self.mutant_results['total'][name] = {}
-            self.mutant_results['random'][name] = {}
-            self.mutant_results['additional'][name] = {}
+            self.mutant_results_single['total'][name] = {}
+            self.mutant_results_single['random'][name] = {}
+            self.mutant_results_single['additional'][name] = {}
 
             """
             Run the mutants against the test sets I've discovered
@@ -235,10 +235,10 @@ class Benchmark(object):
                     # Create the .gcov file from the gcno and gcda data
                     command = "{0} {1}.c".format(Benchmark.__gcov, self.name)
                     Benchmark.run_command(command)
-                    self.mutant_results['random'][name][record['id']] = self.parse_gcov("{0}.c.gcov"
-                                                                                        .format(self.name),
-                                                                                        record['id'],
-                                                                                        out[0].strip())
+                    self.mutant_results_single['random'][name][record['id']] = self.parse_gcov("{0}.c.gcov"
+                                                                                               .format(self.name),
+                                                                                               record['id'],
+                                                                                               out[0].strip())
                     # reset the gcov data
                     command = "rm -f {0}.c.gcov {0}.gcda".format(self.name)
                     Benchmark.run_command(command)
@@ -253,9 +253,10 @@ class Benchmark(object):
                     # Create the .gcov file from the gcno and gcda data
                     command = "{0} {1}.c".format(Benchmark.__gcov, self.name)
                     Benchmark.run_command(command)
-                    self.mutant_results['total'][name][record['id']] = self.parse_gcov("{0}.c.gcov"
-                                                                                       .format(self.name), record['id'],
-                                                                                       out[0].strip())
+                    self.mutant_results_single['total'][name][record['id']] = self.parse_gcov("{0}.c.gcov"
+                                                                                              .format(self.name),
+                                                                                              record['id'],
+                                                                                              out[0].strip())
 
                     # reset the gcov data
                     command = "rm -f {0}.c.gcov {0}.gcda".format(self.name)
@@ -270,10 +271,10 @@ class Benchmark(object):
                     # Create the .gcov file from the gcno and gcda data
                     command = "{0} {1}.c".format(Benchmark.__gcov, self.name)
                     Benchmark.run_command(command)
-                    self.mutant_results['additional'][name][record['id']] = self.parse_gcov("{0}.c.gcov"
-                                                                                            .format(self.name),
-                                                                                            record['id'],
-                                                                                            out[0].strip())
+                    self.mutant_results_single['additional'][name][record['id']] = self.parse_gcov("{0}.c.gcov"
+                                                                                                   .format(self.name),
+                                                                                                   record['id'],
+                                                                                                   out[0].strip())
                     # reset the gcov data
                     command = "rm -f {0}.c.gcov {0}.gcda".format(self.name)
                     Benchmark.run_command(command)
@@ -282,6 +283,84 @@ class Benchmark(object):
             if x >= self.limit:
                 print "{0}quiting at {1}".format(self.tag, x)
                 break
+        print self.tag, "Single completed running: {0} tests for {1}".format(x, self.name)
+        pass
+
+    def run_mutation_tests_union(self, rand, total, additional):
+        x = 0
+        print self.tag, "Union is running mutations for: ", self.name
+        for mutation in self.mutations:
+            os.chdir(mutation)
+            # Compile the file with the necessary gcov flags
+            if not os.path.isfile(Benchmark.__gcc_out):
+                command = "{0} {1} {2}.c".format(Benchmark.__gcc, Benchmark.__gcc_out, self.name)
+                Benchmark.run_command(command)
+            name = mutation.split('/')[-1]
+
+            self.mutant_results_union['total'][name] = {}
+            self.mutant_results_union['random'][name] = {}
+            self.mutant_results_union['additional'][name] = {}
+
+            """
+            Run the mutants against the test sets I've discovered
+            """
+            for bs in rand.union_results:
+                for record in rand.union_results[bs]:
+                    # run the test set given our newly compiled file
+                    command = "./{0} {1}".format(Benchmark.__gcc_out, self.tests[record['id']])
+                    out = Benchmark.run_command(command)
+                    # Create the .gcov file from the gcno and gcda data
+                    command = "{0} {1}.c".format(Benchmark.__gcov, self.name)
+                    Benchmark.run_command(command)
+                    self.mutant_results_union['random'][name][record['id']] = self.parse_gcov("{0}.c.gcov"
+                                                                                              .format(self.name),
+                                                                                              record['id'],
+                                                                                              out[0].strip())
+                    # reset the gcov data
+                    command = "rm -f {0}.c.gcov {0}.gcda".format(self.name)
+                    Benchmark.run_command(command)
+
+                    pass
+
+            for bs in total.union_results:
+                for record in total.union_results[bs]:
+                    # run the test set given our newly compiled file
+                    command = "./{0} {1}".format(Benchmark.__gcc_out, self.tests[record['id']])
+                    out = Benchmark.run_command(command)
+                    # Create the .gcov file from the gcno and gcda data
+                    command = "{0} {1}.c".format(Benchmark.__gcov, self.name)
+                    Benchmark.run_command(command)
+                    self.mutant_results_union['total'][name][record['id']] = self.parse_gcov("{0}.c.gcov"
+                                                                                             .format(self.name),
+                                                                                             record['id'],
+                                                                                             out[0].strip())
+
+                    # reset the gcov data
+                    command = "rm -f {0}.c.gcov {0}.gcda".format(self.name)
+                    Benchmark.run_command(command)
+                    pass
+
+            for bs in additional.union_results:
+                for record in additional.union_results[bs]:
+                    # run the test set given our newly compiled file
+                    command = "./{0} {1}".format(Benchmark.__gcc_out, self.tests[record['id']])
+                    out = Benchmark.run_command(command)
+                    # Create the .gcov file from the gcno and gcda data
+                    command = "{0} {1}.c".format(Benchmark.__gcov, self.name)
+                    Benchmark.run_command(command)
+                    self.mutant_results_union['additional'][name][record['id']] = self.parse_gcov("{0}.c.gcov"
+                                                                                                  .format(self.name),
+                                                                                                  record['id'],
+                                                                                                  out[0].strip())
+                    # reset the gcov data
+                    command = "rm -f {0}.c.gcov {0}.gcda".format(self.name)
+                    Benchmark.run_command(command)
+                    pass
+            x += 1
+            if x >= self.limit:
+                print "{0}quiting at {1}".format(self.tag, x)
+                break
+        print self.tag, "Union completed running: {0} tests for {1}".format(x, self.name)
         pass
 
     """

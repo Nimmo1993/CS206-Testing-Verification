@@ -37,7 +37,6 @@ class Random(Prioritization):
     def build_union(self):
         random.shuffle(self.union_tests)
         self.build_union_coverage_set()
-        pass
 
     def build_union_coverage_set(self):
         for index in self.union_tests:

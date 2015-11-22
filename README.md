@@ -8,7 +8,8 @@ Testing software suite for Testing and Verification
 Running this program is very simple.  It takes 2 arguments:
 
 1. /path/to/curated/input.txt (the provided is sufficient for the course)
-2. /path/to/the/benchmark
+2. /path/to/the/benchmark/
+3. /path/to/the/results/
 
 ## How this program works
 Essentially this program flows accordingly:
