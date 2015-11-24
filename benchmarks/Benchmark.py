@@ -2,6 +2,7 @@ import os
 import subprocess
 import time
 from prioritizations import *
+import platform
 
 
 class Benchmark(object):
@@ -62,7 +63,12 @@ class Benchmark(object):
         self.tests = dict()
         self.mutant_results_single = {'random': {}, 'total': {}, 'additional': {}}
         self.mutant_results_union = {'random': {}, 'total': {}, 'additional': {}}
-        self.run = True if self.name != 'replace' else False
+
+        if platform.system().lower() == 'darwin' and self.name == 'replace':
+            self.run = False
+        else:
+            self.run = True
+
         if limit == -1:
             self.limit = float("inf")
         else:
@@ -384,6 +390,8 @@ class Benchmark(object):
     @staticmethod
     def run_command(command, stdin=None, shell=True):
         #print command
+        if platform.system().lower() == 'linux':
+            command = 'timeout 10 {0}'.format(command)
         p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                              stdin=stdin, shell=shell)
         out, err = p.communicate()
