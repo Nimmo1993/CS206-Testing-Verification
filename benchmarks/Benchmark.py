@@ -249,9 +249,6 @@ class Benchmark(object):
                     command = "{0} {1}.c".format(Benchmark.__gcov, self.name)
                     Benchmark.run_command(command)
 
-                    print os.getcwd()
-                    print record
-
                     if os.path.isfile("{0}.c.gcov".format(self.name)):
                         self.mutant_results_single['random'][name][record['id']] = self.parse_gcov("{0}.c.gcov"
                                                                                                    .format(self.name),
