@@ -108,16 +108,13 @@ class Difference(object):
             # iterate all the tests in the actual result
             for test in iterate[types]:
                 if types == "statements":
-                    if test['id'] != 2423:
-                        statement[test['id']] = self.diff_statement(test, self.mutant_results[coverage][mutant][test['id']][types])
+                    statement[test['id']] = self.diff_statement(test, self.mutant_results[coverage][mutant][test['id']][types])
                 elif types == "branches":
-                    if test['id'] != 2423:
-                        branch[test['id']] = self.diff_branch(test, self.mutant_results[coverage][mutant][test['id']][types])
-                if test['id'] != 2423:
-                    if test['output'][0] != self.mutant_results[coverage][mutant][test['id']][types]['output'][0] or \
-                       test['output'][1] != self.mutant_results[coverage][mutant][test['id']][types]['output'][1]:
-                        output[types][test['id']] = self.mutant_results[coverage][mutant][test['id']][types]['output']
-                        self.results[coverage][types] += 1
+                    branch[test['id']] = self.diff_branch(test, self.mutant_results[coverage][mutant][test['id']][types])
+                if test['output'][0] != self.mutant_results[coverage][mutant][test['id']][types]['output'][0] or \
+                   test['output'][1] != self.mutant_results[coverage][mutant][test['id']][types]['output'][1]:
+                    output[types][test['id']] = self.mutant_results[coverage][mutant][test['id']][types]['output']
+                    self.results[coverage][types] += 1
 
                 self.coverage_diff[coverage][mutant][test['id']] = {'branches': branch, 'statements': statement}
             self.results[coverage]['total'] = self.results[coverage]['branches'] + self.results[coverage]['statements']
