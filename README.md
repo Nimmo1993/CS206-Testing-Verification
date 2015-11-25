@@ -54,3 +54,6 @@ I have discovered a core dump problem while running replace.  I have tested this
 
 ### Union results writing
 I have looked into this problem for quite some time and cannot discern the root cause.  The problem is that when running multiple tests, the union results will not write to disk correctly.  However, when one runs the program with one single test case the union results will be written to disk.  This is such a minor inconvenience that it is worth noting, but I wanted to report it so that you knew I was aware of this problem.
+
+### Compiling replace.c on OSx
+Compiling replace.c on OSx does not work.  My program will detect on what operating system it is running and will decide whether or not to try to run replace.c.  

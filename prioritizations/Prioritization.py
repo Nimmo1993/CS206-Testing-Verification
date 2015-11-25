@@ -78,10 +78,7 @@ class Prioritization(object):
         self.statement_test_cases['covered'] = set()
 
     def reset_branch_test_cases(self):
-        for status, branch in self.branch_test_cases.items():
-            for bid, data in branch.items():
-                pass
-                #self.branch_test_cases[status][bid] = data.union()
+        pass
 
 
 
