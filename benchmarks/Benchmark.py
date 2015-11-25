@@ -258,8 +258,8 @@ class Benchmark(object):
                                                                                                    record['id'],
                                                                                                    out)
                         # reset the gcov data
-                        #command = "rm -f {0}.c.gcov {0}.gcda".format(self.name)
-                        #Benchmark.run_command(command)
+                        command = "rm -f {0}.c.gcov {0}.gcda".format(self.name)
+                        Benchmark.run_command(command)
                     pass
             for bs in total.results:
                 for record in total.results[bs]:
