@@ -108,6 +108,7 @@ class Difference(object):
             # iterate all the tests in the actual result
             for test in iterate[types]:
                 if types == "statements":
+                    print test
                     statement[test['id']] = self.diff_statement(test, self.mutant_results[coverage][mutant][test['id']][types])
                 elif types == "branches":
                     branch[test['id']] = self.diff_branch(test, self.mutant_results[coverage][mutant][test['id']][types])

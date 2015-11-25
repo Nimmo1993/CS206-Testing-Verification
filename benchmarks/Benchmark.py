@@ -417,4 +417,3 @@ class Benchmark(object):
         string = string + self.example + "\nDir: " + self.dir + "\nTest cases: " + self.test_cases
         string = string + "Mutations: " + self.get_mutations_as_string()
         return string + "\n=======================\n"
- 
