@@ -61,11 +61,11 @@ class Difference(object):
             for mutant in self.mutant_results[coverage]:
                 self.raw_results[coverage][mutant] = {}
                 if coverage == "random" and len(self.mutant_results[coverage][mutant]) > 0:
-                    self.iterate_diff_union(self.random, coverage, mutant)
+                    self.iterate_diff_single(self.random, coverage, mutant)
                 elif coverage == "total" and len(self.mutant_results[coverage][mutant]) > 0:
-                    self.iterate_diff_union(self.total, coverage, mutant)
+                    self.iterate_diff_single(self.total, coverage, mutant)
                 elif coverage == "additional" and len(mutant) > 0:
-                    self.iterate_diff_union(self.additional, coverage, mutant)
+                    self.iterate_diff_single(self.additional, coverage, mutant)
 
     """
     Do it for union
@@ -118,7 +118,7 @@ class Difference(object):
                         output[types][test['id']] = self.mutant_results[coverage][mutant][test['id']][types]['output']
                         self.results[coverage][types] += 1
 
-                self.coverage_diff[coverage][mutant][test['id']] = {'branches': branch, 'statements': statement}
+                    self.coverage_diff[coverage][mutant][test['id']] = {'branches': branch, 'statements': statement}
             self.results[coverage]['total'] = self.results[coverage]['branches'] + self.results[coverage]['statements']
         if len(output['branches']) > 0 or len(output['statements']) > 0:
             self.raw_results[coverage][mutant] = output

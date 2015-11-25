@@ -53,13 +53,15 @@ def main():
                 # run the mutations
                 benchmark.run_mutation_tests_single(random, total, additional)
                 benchmark.run_mutation_tests_union(random, total, additional)
-                # build the diff results for both the single
+
+                # build the diff results for the single
                 diff_single = Difference(mutant=benchmark.mutant_results_single, rand=random.results,
                                          total=total.results, add=additional.results)
                 diff_single.find_differences_single()
                 # write our results to disk!
                 diff_single.write_results(sys.argv[3] + __single + benchmark.name)
                 diff_single.write_raw_results(sys.argv[3] + __single + benchmark.name)
+
                 # build the diff results for union
                 diff_union = Difference(mutant=benchmark.mutant_results_union, rand=random.union_results,
                                         total=total.union_results, add=additional.union_results)
