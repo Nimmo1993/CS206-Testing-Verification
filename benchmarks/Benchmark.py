@@ -94,16 +94,16 @@ class Benchmark(object):
         # run the tests on our non-mutated program
         if self.run:
             self.run_tests()
-            #print "{0}size of results: {1}".format(self.tag, len(self.results))
+            # print "{0}size of results: {1}".format(self.tag, len(self.results))
         else:
             print "{0} unable to run {1}, currently disabled by self.run".format(self.tag, self.name)
 
             # print self.results
 
-
     """
     Run the tests available to the program
     """
+
     def run_tests(self):
         test_case = 1
         iteration = 0
@@ -249,14 +249,17 @@ class Benchmark(object):
                     command = "{0} {1}.c".format(Benchmark.__gcov, self.name)
                     Benchmark.run_command(command)
 
+                    print os.getcwd()
+                    print record
+
                     if os.path.isfile("{0}.c.gcov".format(self.name)):
                         self.mutant_results_single['random'][name][record['id']] = self.parse_gcov("{0}.c.gcov"
-                                                                                               .format(self.name),
-                                                                                               record['id'],
-                                                                                               out)
+                                                                                                   .format(self.name),
+                                                                                                   record['id'],
+                                                                                                   out)
                         # reset the gcov data
-                        command = "rm -f {0}.c.gcov {0}.gcda".format(self.name)
-                        Benchmark.run_command(command)
+                        #command = "rm -f {0}.c.gcov {0}.gcda".format(self.name)
+                        #Benchmark.run_command(command)
                     pass
             for bs in total.results:
                 for record in total.results[bs]:
@@ -287,7 +290,8 @@ class Benchmark(object):
                     Benchmark.run_command(command)
                     if os.path.isfile("{0}.c.gcov".format(self.name)):
                         self.mutant_results_single['additional'][name][record['id']] = self.parse_gcov("{0}.c.gcov"
-                                                                                                       .format(self.name),
+                                                                                                       .format(
+                            self.name),
                                                                                                        record['id'],
                                                                                                        out)
                         # reset the gcov data
@@ -367,7 +371,8 @@ class Benchmark(object):
 
                     if os.path.isfile("{0}.c.gcov".format(self.name)):
                         self.mutant_results_union['additional'][name][record['id']] = self.parse_gcov("{0}.c.gcov"
-                                                                                                      .format(self.name),
+                                                                                                      .format(
+                            self.name),
                                                                                                       record['id'],
                                                                                                       out)
                         # reset the gcov data
@@ -401,7 +406,7 @@ class Benchmark(object):
     def run_command(command, stdin=None, shell=True):
         if platform.system().lower() == 'linux':
             command = 'timeout 10 {0}'.format(command)
-        #print command
+        # print command
         p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                              stdin=stdin, shell=shell)
         out, err = p.communicate()
