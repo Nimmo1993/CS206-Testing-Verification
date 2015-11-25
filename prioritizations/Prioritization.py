@@ -72,6 +72,19 @@ class Prioritization(object):
                     mutated = True
         return mutated
 
+    def reset_statement_test_cases(self):
+        self.statement_test_cases['not'] = self.statement_test_cases['covered']\
+            .union(self.statement_test_cases['not'])
+        self.statement_test_cases['covered'] = set()
+
+    def reset_branch_test_cases(self):
+        for status, branch in self.branch_test_cases.items():
+            for bid, data in branch.items():
+                pass
+                #self.branch_test_cases[status][bid] = data.union()
+
+
+
     """
     Checks for similarity of test cases
     """

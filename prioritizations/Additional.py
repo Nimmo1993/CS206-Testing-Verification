@@ -46,6 +46,11 @@ class Additional(Prioritization):
         if len(self.statement_coverage_tests) > 0:
             self.build_statement_coverage_set()
 
+        self.reset_branch_test_cases()
+
+        if len(self.statement_coverage_tests) > 0:
+            self.build_statement_coverage_set()
+
     def build_union(self):
         self.union_tests = sorted(self.union_tests, key=lambda x: x['covered_count'], reverse=True)
 
