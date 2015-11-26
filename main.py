@@ -14,7 +14,7 @@ run_additional = {'run': True, 'display': False}
 __single = "single/"
 __union = "union/"
 __test_suites = "test_suites/"
-run_limit = 5
+run_limit = -1
 
 
 def main():
