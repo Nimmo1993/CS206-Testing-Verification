@@ -46,6 +46,13 @@ Essentially this program flows accordingly:
  
  You could copy and paste the above into a file and the program will work from there.
  
+## Output:
+This program will generate 3 types of files relative to argument 3 (path/to/the/results/)
+
+1. The total number of tests in a test suite and the erroneous mutant programs discovered (4 per program) (found at: /path/to/the/results/single/...)
+2. The total number of union-ed tests in a test suite and the erroneous mutant programs discovered (4 per program) (fount at: /path/to/the/results/union/...)
+3. The list of test cases used to discover the erroneous mutant programs (2 per program) (found at: /path/to/the/results/test_suite/...)
+ 
 ## Errata:
 As with any piece of software, there are bugs.  If only there was a way to automatically detect these…oh wait!  In any event, all these issues are minor in nature and create a miniscule headache for the user.
 
