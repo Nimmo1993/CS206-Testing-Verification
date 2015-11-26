@@ -41,7 +41,7 @@ class Random(Prioritization):
     def build_union_coverage_set(self):
         for index in self.union_tests:
             if index['type'] == 'statement':
-                if self.mutate_statement_test(index):
+                if self.mutate_statement_test(index) is True:
                     self.union_results['statements'].append(index)
             elif index['type'] == 'branch':
                 if self.mutate_branch_test(index):

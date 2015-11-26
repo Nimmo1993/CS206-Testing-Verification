@@ -13,7 +13,8 @@ run_total = {'run': True, 'display': False}
 run_additional = {'run': True, 'display': False}
 __single = "single/"
 __union = "union/"
-run_limit = -1
+__test_suites = "test_suites/"
+run_limit = 5
 
 
 def main():
@@ -31,6 +32,10 @@ def main():
         print "{0}{1}/{2} didn't exist, creating {1} now.".format(tag, sys.argv[3], __union)
         os.mkdir(sys.argv[3] + "/" + __union)
 
+    if not os.path.isdir(sys.argv[3] + "/" + __test_suites):
+        print "{0}{1}/{2} didn't exist, creating {1} now.".format(tag, sys.argv[3], __test_suites)
+        os.mkdir(sys.argv[3] + "/" + __test_suites)
+
     start = int(time.time())
     with open(sys.argv[1]) as f:
         for line in f:
@@ -39,32 +44,41 @@ def main():
             benchmark.prepare_and_run()
             if benchmark.run:
                 # Do random
-                random = Random(benchmark.results)
-                random.build_single()
-                random.build_union()
+                srandom = Random(benchmark.results)
+                srandom.build_single()
+                urandom = Random(benchmark.results)
+                urandom.build_union()
                 # Do total
-                total = Total(benchmark.results)
-                total.build_single()
-                total.build_union()
+                stotal = Total(benchmark.results)
+                stotal.build_single()
+                utotal = Total(benchmark.results)
+                utotal.build_union()
                 # Do Additional
-                additional = Additional(benchmark.results)
-                additional.build_single()
-                additional.build_union()
+                sadditional = Additional(benchmark.results)
+                sadditional.build_single()
+                uadditional = Additional(benchmark.results)
+                uadditional.build_union()
                 # run the mutations
-                benchmark.run_mutation_tests_single(random, total, additional)
-                benchmark.run_mutation_tests_union(random, total, additional)
+                benchmark.run_mutation_tests_single(srandom, stotal, sadditional)
+                benchmark.run_mutation_tests_union(urandom, utotal, uadditional)
+
+                # write our test_suite to disk
+                benchmark.write_test_suite_to_disk(sys.argv[3] + __test_suites, "single", srandom.results,
+                                                   stotal.results, sadditional.results)
+                benchmark.write_test_suite_to_disk(sys.argv[3] + __test_suites, "union", urandom.union_results,
+                                                   utotal.union_results, uadditional.union_results)
 
                 # build the diff results for the single
-                diff_single = Difference(mutant=benchmark.mutant_results_single, rand=random.results,
-                                         total=total.results, add=additional.results)
+                diff_single = Difference(mutant=benchmark.mutant_results_single, rand=srandom.results,
+                                         total=stotal.results, add=sadditional.results)
                 diff_single.find_differences_single()
                 # write our results to disk!
                 diff_single.write_results(sys.argv[3] + __single + benchmark.name)
                 diff_single.write_raw_results(sys.argv[3] + __single + benchmark.name)
 
                 # build the diff results for union
-                diff_union = Difference(mutant=benchmark.mutant_results_union, rand=random.union_results,
-                                        total=total.union_results, add=additional.union_results)
+                diff_union = Difference(mutant=benchmark.mutant_results_union, rand=urandom.union_results,
+                                        total=utotal.union_results, add=uadditional.union_results)
                 diff_union.find_differences_union()
                 # write our results to disk
                 diff_union.write_results(sys.argv[3] + __union + benchmark.name)

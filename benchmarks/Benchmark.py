@@ -49,6 +49,9 @@ class Benchmark(object):
     __gcov_out = "gcov_out"
     __gcov_obj_file = "--object-file executable"
     __gcov = "gcov -bc"
+    __random = "[random]" + os.linesep
+    __total = "[total]" + os.linesep
+    __additional = "[additional]" + os.linesep
 
     def __init__(self, path, line, limit=-1):
         b = line.split('~')
@@ -287,10 +290,10 @@ class Benchmark(object):
                     Benchmark.run_command(command)
                     if os.path.isfile("{0}.c.gcov".format(self.name)):
                         self.mutant_results_single['additional'][name][record['id']] = self.parse_gcov("{0}.c.gcov"
-                                                                                                       .format(
+                            .format(
                             self.name),
-                                                                                                       record['id'],
-                                                                                                       out)
+                            record['id'],
+                            out)
                         # reset the gcov data
                         command = "rm -f {0}.c.gcov {0}.gcda".format(self.name)
                         Benchmark.run_command(command)
@@ -368,10 +371,10 @@ class Benchmark(object):
 
                     if os.path.isfile("{0}.c.gcov".format(self.name)):
                         self.mutant_results_union['additional'][name][record['id']] = self.parse_gcov("{0}.c.gcov"
-                                                                                                      .format(
+                            .format(
                             self.name),
-                                                                                                      record['id'],
-                                                                                                      out)
+                            record['id'],
+                            out)
                         # reset the gcov data
                         command = "rm -f {0}.c.gcov {0}.gcda".format(self.name)
                         Benchmark.run_command(command)
@@ -382,6 +385,27 @@ class Benchmark(object):
                 break
         print self.tag, "Union completed running: {0} tests for {1}".format(x, self.name)
         pass
+
+    def write_test_suite_to_disk(self, path, action, random, total, additional):
+        if path is not None:
+            with open(path + self.name + "_" + action, 'a') as output:
+
+                output.write(Benchmark.__random)
+                for coverage in random:
+                    for test in random[coverage]:
+                        output.write("{0}:\t{1}{2}".format(test['id'], self.tests[test['id']], os.linesep))
+                output.write("-----------"+os.linesep)
+
+                output.write(Benchmark.__total)
+                for coverage in total:
+                    for test in total[coverage]:
+                        output.write("{0}:\t{1}{2}".format(test['id'], self.tests[test['id']], os.linesep))
+                output.write("-----------"+os.linesep)
+
+                output.write(Benchmark.__additional)
+                for coverage in additional:
+                    for test in additional[coverage]:
+                        output.write("{0}:\t{1}{2}".format(test['id'], self.tests[test['id']], os.linesep))
 
     """
     Retrieve each mutation from the program folder
